@@ -8,20 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		0A1405CE20F2F515009A6874 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405CD20F2F515009A6874 /* AppDelegate.swift */; };
-		0A1405D020F2F515009A6874 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405CF20F2F515009A6874 /* ViewController.swift */; };
-		0A1405D320F2F515009A6874 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A1405D120F2F515009A6874 /* Main.storyboard */; };
 		0A1405D520F2F516009A6874 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0A1405D420F2F516009A6874 /* Assets.xcassets */; };
 		0A1405D820F2F516009A6874 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A1405D620F2F516009A6874 /* LaunchScreen.storyboard */; };
+		0A1405E120F2F73A009A6874 /* XHWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E020F2F73A009A6874 /* XHWindow.swift */; };
+		0A1405E420F2FD27009A6874 /* XHTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E320F2FD27009A6874 /* XHTabBarController.swift */; };
+		0A1405E620F2FECD009A6874 /* XHIntroductionController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E520F2FECD009A6874 /* XHIntroductionController.swift */; };
+		0A1405E920F30401009A6874 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E820F30401009A6874 /* UIColor+Hex.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0A1405CA20F2F515009A6874 /* WeChat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeChat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A1405CD20F2F515009A6874 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		0A1405CF20F2F515009A6874 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		0A1405D220F2F515009A6874 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		0A1405D420F2F516009A6874 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0A1405D720F2F516009A6874 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0A1405D920F2F516009A6874 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0A1405E020F2F73A009A6874 /* XHWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHWindow.swift; sourceTree = "<group>"; };
+		0A1405E320F2FD27009A6874 /* XHTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHTabBarController.swift; sourceTree = "<group>"; };
+		0A1405E520F2FECD009A6874 /* XHIntroductionController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHIntroductionController.swift; sourceTree = "<group>"; };
+		0A1405E820F30401009A6874 /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,14 +58,40 @@
 		0A1405CC20F2F515009A6874 /* WeChat */ = {
 			isa = PBXGroup;
 			children = (
+				0A1405E720F303D9009A6874 /* Extension */,
+				0A1405E220F2FCF4009A6874 /* Tools */,
+				0A1405DF20F2F715009A6874 /* RootWindow */,
 				0A1405CD20F2F515009A6874 /* AppDelegate.swift */,
-				0A1405CF20F2F515009A6874 /* ViewController.swift */,
-				0A1405D120F2F515009A6874 /* Main.storyboard */,
 				0A1405D420F2F516009A6874 /* Assets.xcassets */,
 				0A1405D620F2F516009A6874 /* LaunchScreen.storyboard */,
 				0A1405D920F2F516009A6874 /* Info.plist */,
 			);
 			path = WeChat;
+			sourceTree = "<group>";
+		};
+		0A1405DF20F2F715009A6874 /* RootWindow */ = {
+			isa = PBXGroup;
+			children = (
+				0A1405E020F2F73A009A6874 /* XHWindow.swift */,
+				0A1405E320F2FD27009A6874 /* XHTabBarController.swift */,
+				0A1405E520F2FECD009A6874 /* XHIntroductionController.swift */,
+			);
+			path = RootWindow;
+			sourceTree = "<group>";
+		};
+		0A1405E220F2FCF4009A6874 /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Tools;
+			sourceTree = "<group>";
+		};
+		0A1405E720F303D9009A6874 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				0A1405E820F30401009A6874 /* UIColor+Hex.swift */,
+			);
+			path = Extension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -124,7 +154,6 @@
 			files = (
 				0A1405D820F2F516009A6874 /* LaunchScreen.storyboard in Resources */,
 				0A1405D520F2F516009A6874 /* Assets.xcassets in Resources */,
-				0A1405D320F2F515009A6874 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -135,22 +164,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A1405D020F2F515009A6874 /* ViewController.swift in Sources */,
 				0A1405CE20F2F515009A6874 /* AppDelegate.swift in Sources */,
+				0A1405E120F2F73A009A6874 /* XHWindow.swift in Sources */,
+				0A1405E420F2FD27009A6874 /* XHTabBarController.swift in Sources */,
+				0A1405E620F2FECD009A6874 /* XHIntroductionController.swift in Sources */,
+				0A1405E920F30401009A6874 /* UIColor+Hex.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		0A1405D120F2F515009A6874 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				0A1405D220F2F515009A6874 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		0A1405D620F2F516009A6874 /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -213,7 +237,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -267,7 +291,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -283,6 +307,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = U89WA2RHZ6;
 				INFOPLIST_FILE = WeChat/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -301,6 +326,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = U89WA2RHZ6;
 				INFOPLIST_FILE = WeChat/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

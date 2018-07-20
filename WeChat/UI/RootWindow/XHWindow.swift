@@ -11,7 +11,7 @@ import UIKit
 class XHWindow: UIWindow {
     
     func configureRootController() {
-        rootViewController = XHRootViewController()
+        rootViewController = XHTabBarController()
     }
     
 }

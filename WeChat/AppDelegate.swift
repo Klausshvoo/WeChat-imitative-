@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+        XHDatabase.configuration.open()
         let window = XHWindow(frame: UIScreen.main.bounds)
         window.configureRootController()
         self.window = window

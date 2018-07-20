@@ -33,16 +33,16 @@ class XHRootViewController: UIViewController {
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
         button.heightAnchor.constraint(equalToConstant: 48).isActive = true
-        button.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -edgeMargin).isActive = true
+        button.bottomAnchor.constraint(equalTo: view.layoutMarginsGuide.bottomAnchor, constant: -edgeMargin * 2).isActive = true
         if tag == 0 {
-            button.leftAnchor.constraint(equalTo: view.leftAnchor, constant: edgeMargin).isActive = true
-            button.rightAnchor.constraint(equalTo: view.centerXAnchor, constant: -edgeMargin / 2).isActive = true
+            button.leftAnchor.constraint(equalTo: view.leftAnchor, constant: edgeMargin * 2).isActive = true
+            button.rightAnchor.constraint(equalTo: view.centerXAnchor, constant: -edgeMargin).isActive = true
             button.setTitle("登录", for: .normal)
             button.setTitleColor(UIColor.black, for: .normal)
             button.backgroundColor = UIColor.background
         } else {
-            button.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: edgeMargin / 2).isActive = true
-            button.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -edgeMargin).isActive = true
+            button.leftAnchor.constraint(equalTo: view.centerXAnchor, constant: edgeMargin).isActive = true
+            button.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -edgeMargin * 2).isActive = true
             button.setTitle("注册", for: .normal)
             button.setTitleColor(UIColor.white, for: .normal)
             button.backgroundColor = UIColor.main
@@ -55,7 +55,7 @@ class XHRootViewController: UIViewController {
         if sender.tag == 0 {
             navigationController = XHNavigationController(rootViewController: XHLoginViewController())
         } else {
-            navigationController = XHNavigationController()
+            navigationController = XHNavigationController(rootViewController: UIViewController())
         }
         present(navigationController, animated: true, completion: nil)
     }

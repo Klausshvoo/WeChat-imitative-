@@ -26,4 +26,4 @@ class XHConfig: NSObject {
 
 }
 
-let edgeMargin: CGFloat = 20
+let edgeMargin: CGFloat = 10

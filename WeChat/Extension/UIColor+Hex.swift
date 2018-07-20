@@ -19,10 +19,12 @@ extension UIColor {
     
     static let main = UIColor(hex: 0x26ab28)
     
-    static let background = UIColor(hex: 0xf8f8f8)
+    static let background = UIColor(hex: 0xebebeb)
     
     static let grayText = UIColor(hex: 0xb7b2b6)
     
-    static let sepLine = UIColor(hex: 0xe4e4e4)
+    static let separatorLine = UIColor(hex: 0xe4e4e4)
+    
+    static let cellHL = UIColor(hex: 0xf3f2f7)
     
 }

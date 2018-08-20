@@ -22,6 +22,12 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>微信需要访问你的相机</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>微信需要访问你的麦克风</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>微信需要访问你的相册</string>
 	<key>UIBackgroundModes</key>
 	<array/>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class XHCommunication: NSObject,Codable {
+class XHCommunication: NSObject {
     
     private(set) var members: [XHFriend] = []
     

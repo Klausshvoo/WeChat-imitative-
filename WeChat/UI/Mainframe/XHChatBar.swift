@@ -10,7 +10,9 @@ import UIKit
 
 class XHChatBar: UIView {
     
-    private let textView = UITextView()
+    weak var delegate: XHChatBarDelegate?
+    
+    private let textView = XHChatBarTextView()
     
     private let audioButton = UIButton(type: .custom)
     
@@ -21,6 +23,8 @@ class XHChatBar: UIView {
     private let voiceButton = UIButton(type: .custom)
     
     private var textViewHeightConstraint: NSLayoutConstraint!
+    
+    private let recordStateView = XHRecordStateView()
     
     /// 语音消息最长时间，
     var maxRecordDuration: TimeInterval = 60
@@ -57,6 +61,7 @@ class XHChatBar: UIView {
         expressionButton.bottomAnchor.constraint(equalTo: audioButton.bottomAnchor).isActive = true
         expressionButton.addTarget(self, action: #selector(expressionButtonClick(_:)), for: .touchUpInside)
         expressionButton.setImage(#imageLiteral(resourceName: "ToolViewKeyboard"), for: .selected)
+        expressionButton.inputEmotionDelegate = self
         textView.layer.cornerRadius = 5
         textView.layer.masksToBounds = true
         textView.delegate = self
@@ -64,6 +69,8 @@ class XHChatBar: UIView {
         textView.font = UIFont.systemFont(ofSize: 16)
         textView.tintColor = UIColor.main
         textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.returnKeyType = .send
+        textView.enablesReturnKeyAutomatically = true
         voiceButton.translatesAutoresizingMaskIntoConstraints = false
         voiceButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
         voiceButton.layer.cornerRadius = 5
@@ -82,6 +89,7 @@ class XHChatBar: UIView {
         configureTextView()
         textViewHeightConstraint = textView.heightAnchor.constraint(equalToConstant: 40)
         textViewHeightConstraint.isActive = true
+        textView.textColor = UIColor.grayText
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -106,15 +114,15 @@ class XHChatBar: UIView {
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "contentSize" {
-            textViewHeightConstraint.constant = max(textView.contentSize.height, 40)
+            let constant = max(textView.contentSize.height, 40)
+            guard constant != textViewHeightConstraint.constant else { return }
+            textViewHeightConstraint.constant = constant
+            delegate?.chatBardidChangeContentSize(self)
         }
     }
     
     // MARK: - 语音和键盘切换
     @objc private func audioButtonClick(_ sender: UIButton) {
-        if expressionButton.isSelected {
-            expressionButton.isSelected = false
-        }
         sender.isSelected = !sender.isSelected
         sender.setImage(sender.isSelected ? #imageLiteral(resourceName: "ToolViewKeyboardHL") : #imageLiteral(resourceName: "ToolViewInputVoiceHL"), for: .highlighted)
         if !sender.isSelected {
@@ -125,37 +133,63 @@ class XHChatBar: UIView {
             endEditing(true)
             textView.removeFromSuperview()
             configureVoiceButton()
+            if expressionButton.isSelected  {
+                expressionButton.isSelected = false
+                expressionButton.setImage(#imageLiteral(resourceName: "ToolViewEmotionHL"), for: .highlighted)
+            } else if moreButton.isSelected {
+                moreButton.isSelected = false
+            }
+            XHAudioManager.requestAccess { [weak self](flag) in
+                if !flag {
+                    self?.viewController?.present(UIAlertController.alertForAudioNotAuthorized(), animated: true, completion: nil)
+                }
+            }
         }
     }
     
     // MARK: - 语音
     @objc private func voiceButtonTouchDown(_ sender: UIButton) {
+        // 检测权限，没有权限进行提示
+        guard XHAudioManager.checkAuthorizationStatus() else {
+            viewController?.present(UIAlertController.alertForAudioNotAuthorized(), animated: true, completion: nil)
+            return;
+        }
+        if let viewController = viewController {
+            viewController.view.addSubview(recordStateView)
+            recordStateView.centerXAnchor.constraint(equalTo: viewController.view.centerXAnchor).isActive = true
+            recordStateView.centerYAnchor.constraint(equalTo: viewController.view.centerYAnchor).isActive = true
+        }
         changeVoiceButtonTitle(for: .touchDown)
         sender.backgroundColor = UIColor.grayText
+        let audioManager = XHAudioManager.shared
+        audioManager.recordDelegate = self
+        audioManager.record(at: audioManager.creatRecordPath())
         // 开启录音，若录制达到最大时长，主动调用touupinside
         perform(#selector(cancelVoiceButtonTouch), with: nil, afterDelay: maxRecordDuration)
     }
     
     @objc private func voiceButtonTouchDragInside(_ sender: UIButton) {
         changeVoiceButtonTitle(for: .touchDragInside)
+        recordStateView.state = .normal
     }
     
     @objc private func voiceButtonTouchDragOutside(_ sender: UIButton) {
         changeVoiceButtonTitle(for: .touchDragOutside)
+        recordStateView.state = .cancel
     }
     
     @objc private func voiceButtonTouchUpInside(_ sender: UIButton) {
         changeVoiceButtonTitle(for: .touchUpInside)
         sender.backgroundColor = nil
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(cancelVoiceButtonTouch), object: nil)
-        // 判断录音时长，过短提示，符合长度进行发送
+         XHAudioManager.shared.stopRecording()
     }
     
     @objc private func voiceButtonTouchUpOutside(_ sender: UIButton) {
         changeVoiceButtonTitle(for: .touchUpInside)
         sender.backgroundColor = nil
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(cancelVoiceButtonTouch), object: nil)
-        // 取消发送
+        XHAudioManager.shared.cancelRecording()
     }
     
     @objc private func voiceButtonTouchCancel(_ sender: UIButton) {
@@ -180,33 +214,146 @@ class XHChatBar: UIView {
     @objc private func cancelVoiceButtonTouch() {
         guard voiceButton.isTracking else { return }
         voiceButton.cancelTracking(with: nil)
-        /// 达到最大语音录制时长调用，此处需要发送语音消息
+        XHAudioManager.shared.stopRecording()
     }
     
     // MARK: - 表情和键盘切换
     @objc private func expressionButtonClick(_ sender: UIButton) {
-        if audioButton.isSelected {
-            audioButton.isSelected = false
-        }
         sender.isSelected = !sender.isSelected
         sender.setImage(sender.isSelected ? #imageLiteral(resourceName: "ToolViewKeyboardHL") : #imageLiteral(resourceName: "ToolViewEmotionHL"), for: .highlighted)
-        sender.becomeFirstResponder()
+        if sender.isSelected {
+            sender.becomeFirstResponder()
+            if audioButton.isSelected {
+                audioButton.isSelected = false
+                audioButton.setImage(#imageLiteral(resourceName: "ToolViewInputVoiceHL"), for: .highlighted)
+                voiceButton.removeFromSuperview()
+                configureTextView()
+            } else if moreButton.isSelected {
+                moreButton.isSelected = false
+            }
+        } else {
+            textView.becomeFirstResponder()
+        }
     }
     
     // MARK: - 更多按钮响应键盘
     @objc private func moreButtomClick(_ sender: UIButton) {
-        if audioButton.isSelected {
-            audioButton.isSelected = false
+        sender.isSelected = !sender.isSelected
+        if sender.isSelected {
+            sender.becomeFirstResponder()
+            if audioButton.isSelected {
+                audioButton.isSelected = false
+                audioButton.setImage(#imageLiteral(resourceName: "ToolViewInputVoiceHL"), for: .highlighted)
+                voiceButton.removeFromSuperview()
+                configureTextView()
+            } else if expressionButton.isSelected {
+                expressionButton.isSelected = false
+                expressionButton.setImage(#imageLiteral(resourceName: "ToolViewEmotionHL"), for: .highlighted)
+            }
+        } else {
+            textView.becomeFirstResponder()
         }
-        if expressionButton.isSelected {
-            expressionButton.isSelected = false
-        }
-        sender.becomeFirstResponder()
     }
     
 }
 
 extension XHChatBar: UITextViewDelegate {
+    
+    func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
+        if expressionButton.isSelected  {
+            expressionButton.isSelected = false
+            expressionButton.setImage(#imageLiteral(resourceName: "ToolViewEmotionHL"), for: .highlighted)
+        } else if moreButton.isSelected {
+            moreButton.isSelected = false
+        }
+        return true
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        guard text != "\n" else { // 发送
+            delegate?.chatBar(self, shouldSend: XHTextMessage(content: textView.text))
+            textView.text = nil
+            return false
+        }
+        if text == "" && range.length == 1 { //删除，检测表情进行整体删除
+            let deleteText = (textView.text as NSString).substring(with: range)
+            if deleteText == "]" {
+                let begin = (textView.text as NSString).range(of: "[", options: .backwards).location
+                if begin != NSNotFound {
+                    let shouldDeleteRange = NSMakeRange(begin, range.location - begin + 1)
+                    let shouldDeleteText = (textView.text as NSString).substring(with: shouldDeleteRange)
+                    if shouldDeleteText.isExpression {
+                        textView.text  = (textView.text as NSString).replacingCharacters(in: shouldDeleteRange, with: "")
+                        return false
+                    }
+                }
+            }
+        }
+        return true
+    }
+    
+}
+
+extension XHChatBar: XHChatBarExpressionKeyboardDelegate {
+    
+    func keyboard(_ keyboard: XHChatBarExpressionKeyboard, shouldEnter emotion: XHEmotion) {
+        var text = textView.text ?? ""
+        if let title = emotion.title,title.isEmpty {
+            guard !text.isEmpty else { return }
+            if textView(textView, shouldChangeTextIn: NSMakeRange(textView.text.count - 1, 1), replacementText: "") {
+                text = String(text[text.startIndex ..< text.index(before: text.endIndex)])
+                textView.text = text
+            }
+        } else {
+            text += emotion.title!
+            textView.text = text
+        }
+    }
+    
+    func keyboardShouldAddEmotionBag(_ keyboard: XHChatBarExpressionKeyboard) {
+        delegate?.chatBar(self, shouldHandleAction: .addEmotionBag)
+    }
+    
+    func keyboardShouldSend(_ keyboard: XHChatBarExpressionKeyboard) {
+        delegate?.chatBar(self, shouldSend: XHTextMessage(content: textView.text))
+    }
+    
+    func keyboard(_ keyboard: XHChatBarExpressionKeyboard, shouldSend emotion: XHEmotion) {
+        delegate?.chatBar(self, shouldSend: XHEmotionMessage(emotion: emotion))
+    }
+    
+    func keyboardShouldSetEmotionBags(_ keyboard: XHChatBarExpressionKeyboard) {
+        delegate?.chatBar(self, shouldHandleAction: .setEmotionBags)
+    }
+    
+}
+
+// MARK: - XHAudioManagerRecordingDelegate
+extension XHChatBar: XHAudioManagerRecordingDelegate {
+    
+    func audioManager(_ manager: XHAudioManager, didRecordAt volume: Float) {
+        recordStateView.volume = volume
+    }
+    
+    func audioManager(_ manager: XHAudioManager, didEndRecordingAt path: String, duration: TimeInterval) {
+        recordStateView.removeFromSuperview()
+        delegate?.chatBar(self, shouldSend: XHAudioMessage(path: path, duration: duration))
+    }
+    
+    func audioManager(_ manager: XHAudioManager, didOccur error: XHAudioRecordError) {
+        recordStateView.removeFromSuperview()
+        if voiceButton.isTracking {
+            voiceButton.cancelTracking(with: nil)
+        }
+        delegate?.chatBarDidCancelRecording(self)
+    }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action.description.hasSuffix("Item:") {
+            return false
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
     
 }
 
@@ -220,55 +367,51 @@ fileprivate class XHChatBarButton: UIButton {
         return true
     }
     
+    weak var inputEmotionDelegate: XHChatBarExpressionKeyboardDelegate?
+    
     var keyboardType: XHChatBarKeyboardType = .expression
     
     override var inputView: UIView? {
-        return XHChatBarKeyboard(type: keyboardType)
-    }
-    
-}
-
-
-class XHChatBarKeyboard: UIView {
-    
-    private(set) var type: XHChatBarKeyboardType
-    
-    private let scrollView = UIScrollView()
-    
-    init(type: XHChatBarKeyboardType) {
-        self.type = type
-        super.init(frame: .zero)
-        translatesAutoresizingMaskIntoConstraints = false
-        addSubview(scrollView)
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        scrollView.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        scrollView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        scrollView.backgroundColor = UIColor.red
-        configureKeyboard()
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    private func configureKeyboard() {
-        switch type {
+        switch keyboardType {
         case .expression:
-            scrollView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor, constant: -40).isActive = true
+            let keyboard = XHChatBarExpressionKeyboard()
+            keyboard.delegate = self.inputEmotionDelegate
+            return keyboard
         case .more:
-            scrollView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor, constant: -10).isActive = true
+            return XHChatBarMoreKeyboard()
         }
-    }
-    
-    override func didMoveToSuperview() {
-        super.didMoveToSuperview()
-        if let superview = superview {
-            leftAnchor.constraint(equalTo: superview.leftAnchor).isActive = true
-            rightAnchor.constraint(equalTo: superview.rightAnchor).isActive = true
-            topAnchor.constraint(equalTo: superview.topAnchor).isActive = true
-        }
-        
     }
     
 }
+
+fileprivate class XHChatBarTextView: UITextView {
+    
+    @discardableResult override func becomeFirstResponder() -> Bool {
+        textColor = UIColor.black
+        return super.becomeFirstResponder()
+    }
+    
+    @discardableResult override func resignFirstResponder() -> Bool {
+        textColor = UIColor.grayText
+        return super.resignFirstResponder()
+    }
+}
+
+enum XHChatBarActionType: Int {
+    case addEmotionBag,setEmotionBags,selectPhotoes,takePhoto,videoCall,location,redbag,transfer,speechInput,infoCard,collection,files,cards
+}
+
+protocol XHChatBarDelegate: NSObjectProtocol {
+    
+    func chatBar(_ chatBar: XHChatBar,shouldSend message: XHMessage)
+    
+    func chatBar(_ chatBar: XHChatBar,shouldHandleAction type: XHChatBarActionType)
+    
+    func chatBarDidBeginRecording(_ chatBar: XHChatBar)
+    
+    func chatBarDidCancelRecording(_ chatBar: XHChatBar)
+    
+    func chatBardidChangeContentSize(_ chatBar: XHChatBar)
+    
+}
+

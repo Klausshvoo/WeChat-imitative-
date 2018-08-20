@@ -79,6 +79,8 @@ extension Date {
             let year = String(temp[temp.startIndex ..< temp.index(temp.startIndex, offsetBy: 4)])
             if year == currentYear {
                 return String(temp[temp.index(temp.startIndex, offsetBy: 5) ..< temp.endIndex])
+            } else {
+                return String(temp[temp.startIndex ..< temp.index(temp.startIndex, offsetBy: 10)])
             }
         }
         return temp

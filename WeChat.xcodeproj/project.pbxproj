@@ -33,8 +33,21 @@
 		0A1405E120F2F73A009A6874 /* XHWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E020F2F73A009A6874 /* XHWindow.swift */; };
 		0A1405E420F2FD27009A6874 /* XHTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E320F2FD27009A6874 /* XHTabBarController.swift */; };
 		0A1405E920F30401009A6874 /* UIColor+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A1405E820F30401009A6874 /* UIColor+Hex.swift */; };
+		0A23647621081C4200FF69F7 /* XHChatBarKeyboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A23647521081C4200FF69F7 /* XHChatBarKeyboard.swift */; };
+		0A23647821084A7E00FF69F7 /* XHAudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A23647721084A7E00FF69F7 /* XHAudioManager.swift */; };
+		0A28E3B62109AE900063B5DB /* XHRecordStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A28E3B52109AE900063B5DB /* XHRecordStateView.swift */; };
+		0A296757210D560D00F28069 /* XHMessageHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A296756210D560D00F28069 /* XHMessageHeader.swift */; };
+		0A296759210DE9F100F28069 /* UIResponder+UIMenuController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A296758210DE9F100F28069 /* UIResponder+UIMenuController.swift */; };
+		0A382C85210EE65A00E748E5 /* XHMessageTranspondable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A382C84210EE65A00E748E5 /* XHMessageTranspondable.swift */; };
+		0A382C87210EE7EC00E748E5 /* XHFriendSelectController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A382C86210EE7EC00E748E5 /* XHFriendSelectController.swift */; };
+		0A382C8B210EFD5900E748E5 /* String+RegularExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A382C8A210EFD5900E748E5 /* String+RegularExpression.swift */; };
+		0A382C91210F0B0C00E748E5 /* XHPlistManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A382C90210F0B0C00E748E5 /* XHPlistManager.swift */; };
+		0A382C93210F13BD00E748E5 /* Emotions.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0A382C92210F13BD00E748E5 /* Emotions.plist */; };
+		0A9B282A210C968700FA638A /* XHMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9B2829210C968700FA638A /* XHMessageCell.swift */; };
+		0A9B282C210CB99000FA638A /* UITableView+Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9B282B210CB99000FA638A /* UITableView+Update.swift */; };
 		0AADEB9020F6FB4F00E96757 /* XHAreaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AADEB8F20F6FB4F00E96757 /* XHAreaViewController.swift */; };
 		0AADEB9220F73CBE00E96757 /* UIImage+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */; };
+		0ADE55D72126507A0030FA7F /* XHLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADE55D62126507A0030FA7F /* XHLabel.swift */; };
 		B0ABBD603D24BCA437B462C7 /* Pods_WeChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA685CC0C732FD9D5AC8BB0 /* Pods_WeChat.framework */; };
 /* End PBXBuildFile section */
 
@@ -68,8 +81,21 @@
 		0A1405E020F2F73A009A6874 /* XHWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHWindow.swift; sourceTree = "<group>"; };
 		0A1405E320F2FD27009A6874 /* XHTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHTabBarController.swift; sourceTree = "<group>"; };
 		0A1405E820F30401009A6874 /* UIColor+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Hex.swift"; sourceTree = "<group>"; };
+		0A23647521081C4200FF69F7 /* XHChatBarKeyboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHChatBarKeyboard.swift; sourceTree = "<group>"; };
+		0A23647721084A7E00FF69F7 /* XHAudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHAudioManager.swift; sourceTree = "<group>"; };
+		0A28E3B52109AE900063B5DB /* XHRecordStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHRecordStateView.swift; sourceTree = "<group>"; };
+		0A296756210D560D00F28069 /* XHMessageHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHMessageHeader.swift; sourceTree = "<group>"; };
+		0A296758210DE9F100F28069 /* UIResponder+UIMenuController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIResponder+UIMenuController.swift"; sourceTree = "<group>"; };
+		0A382C84210EE65A00E748E5 /* XHMessageTranspondable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHMessageTranspondable.swift; sourceTree = "<group>"; };
+		0A382C86210EE7EC00E748E5 /* XHFriendSelectController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHFriendSelectController.swift; sourceTree = "<group>"; };
+		0A382C8A210EFD5900E748E5 /* String+RegularExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+RegularExpression.swift"; sourceTree = "<group>"; };
+		0A382C90210F0B0C00E748E5 /* XHPlistManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHPlistManager.swift; sourceTree = "<group>"; };
+		0A382C92210F13BD00E748E5 /* Emotions.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Emotions.plist; sourceTree = "<group>"; };
+		0A9B2829210C968700FA638A /* XHMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHMessageCell.swift; sourceTree = "<group>"; };
+		0A9B282B210CB99000FA638A /* UITableView+Update.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+Update.swift"; sourceTree = "<group>"; };
 		0AADEB8F20F6FB4F00E96757 /* XHAreaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHAreaViewController.swift; sourceTree = "<group>"; };
 		0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Color.swift"; sourceTree = "<group>"; };
+		0ADE55D62126507A0030FA7F /* XHLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XHLabel.swift; sourceTree = "<group>"; };
 		53BCCA3007630655F005EA2E /* Pods-WeChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-WeChat/Pods-WeChat.release.xcconfig"; sourceTree = "<group>"; };
 		B82088520B7EEB4D69F4D296 /* Pods-WeChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WeChat/Pods-WeChat.debug.xcconfig"; sourceTree = "<group>"; };
 		EBA685CC0C732FD9D5AC8BB0 /* Pods_WeChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WeChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -115,6 +141,14 @@
 				0A0328A120FF0ADE00BE625F /* XHChatViewController.swift */,
 				0A09E91A2101DB4E000CD2DC /* XHKeyboardObserver.swift */,
 				0A0328A520FF1E3300BE625F /* XHChatBar.swift */,
+				0A23647521081C4200FF69F7 /* XHChatBarKeyboard.swift */,
+				0A23647721084A7E00FF69F7 /* XHAudioManager.swift */,
+				0A28E3B52109AE900063B5DB /* XHRecordStateView.swift */,
+				0A9B2829210C968700FA638A /* XHMessageCell.swift */,
+				0A296756210D560D00F28069 /* XHMessageHeader.swift */,
+				0A296758210DE9F100F28069 /* UIResponder+UIMenuController.swift */,
+				0A382C84210EE65A00E748E5 /* XHMessageTranspondable.swift */,
+				0A382C86210EE7EC00E748E5 /* XHFriendSelectController.swift */,
 			);
 			path = Mainframe;
 			sourceTree = "<group>";
@@ -204,6 +238,7 @@
 			isa = PBXGroup;
 			children = (
 				0A0611EB20FDE29D00F856F2 /* WeChat.entitlements */,
+				0A382C8C210F05A800E748E5 /* Resource */,
 				0A0611DB20FD842C00F856F2 /* Localization */,
 				0A1405E220F2FCF4009A6874 /* Tools */,
 				0A1405E720F303D9009A6874 /* Extension */,
@@ -229,6 +264,7 @@
 		0A1405E220F2FCF4009A6874 /* Tools */ = {
 			isa = PBXGroup;
 			children = (
+				0A382C8F210F0AE800E748E5 /* PlistManager */,
 				0A04CC4320F5E59200C25145 /* Database */,
 				0A04CC4020F5E0AA00C25145 /* XHConfig */,
 				0A0562B020F45BE400FA1531 /* Secrecy */,
@@ -239,11 +275,30 @@
 		0A1405E720F303D9009A6874 /* Extension */ = {
 			isa = PBXGroup;
 			children = (
+				0ADE55D62126507A0030FA7F /* XHLabel.swift */,
 				0A1405E820F30401009A6874 /* UIColor+Hex.swift */,
 				0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */,
 				0A0611E720FDC98400F856F2 /* Date+Adjust.swift */,
+				0A9B282B210CB99000FA638A /* UITableView+Update.swift */,
+				0A382C8A210EFD5900E748E5 /* String+RegularExpression.swift */,
 			);
 			path = Extension;
+			sourceTree = "<group>";
+		};
+		0A382C8C210F05A800E748E5 /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				0A382C92210F13BD00E748E5 /* Emotions.plist */,
+			);
+			path = Resource;
+			sourceTree = "<group>";
+		};
+		0A382C8F210F0AE800E748E5 /* PlistManager */ = {
+			isa = PBXGroup;
+			children = (
+				0A382C90210F0B0C00E748E5 /* XHPlistManager.swift */,
+			);
+			path = PlistManager;
 			sourceTree = "<group>";
 		};
 		0AADEB8E20F6FB0C00E96757 /* Country&Area */ = {
@@ -339,6 +394,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A382C93210F13BD00E748E5 /* Emotions.plist in Resources */,
 				0A04CC3D20F5AE6B00C25145 /* Assets.xcassets in Resources */,
 				0A0611DE20FD848200F856F2 /* Localizable.strings in Resources */,
 			);
@@ -391,28 +447,40 @@
 			buildActionMask = 2147483647;
 			files = (
 				0A1405CE20F2F515009A6874 /* AppDelegate.swift in Sources */,
+				0A9B282A210C968700FA638A /* XHMessageCell.swift in Sources */,
 				0A1405E120F2F73A009A6874 /* XHWindow.swift in Sources */,
 				0AADEB9020F6FB4F00E96757 /* XHAreaViewController.swift in Sources */,
 				0A0328A220FF0ADE00BE625F /* XHChatViewController.swift in Sources */,
+				0A23647621081C4200FF69F7 /* XHChatBarKeyboard.swift in Sources */,
 				0A0611E220FDAD7300F856F2 /* XHCommunication.swift in Sources */,
 				0A04CC3F20F5B11100C25145 /* XHRootViewController.swift in Sources */,
+				0A9B282C210CB99000FA638A /* UITableView+Update.swift in Sources */,
 				0A05487720FC6A7B00EE80AF /* XHContactsController.swift in Sources */,
 				0A05487B20FC6A9600EE80AF /* XHMeController.swift in Sources */,
 				0A05487920FC6A8C00EE80AF /* XHDiscoverController.swift in Sources */,
 				0A0611E820FDC98400F856F2 /* Date+Adjust.swift in Sources */,
 				0A04CC4720F5FFA500C25145 /* XHNavigationController.swift in Sources */,
 				0AADEB9220F73CBE00E96757 /* UIImage+Color.swift in Sources */,
+				0A28E3B62109AE900063B5DB /* XHRecordStateView.swift in Sources */,
 				0A09E91B2101DB4E000CD2DC /* XHKeyboardObserver.swift in Sources */,
 				0A0611EA20FDD4D500F856F2 /* XHMessageCollection.swift in Sources */,
 				0A0611E420FDB86900F856F2 /* XHUser.swift in Sources */,
 				0A0562B220F45C4300FA1531 /* RSA.swift in Sources */,
+				0A382C8B210EFD5900E748E5 /* String+RegularExpression.swift in Sources */,
 				0A05487520FC6A5D00EE80AF /* XHMainframeController.swift in Sources */,
+				0A382C91210F0B0C00E748E5 /* XHPlistManager.swift in Sources */,
+				0A296759210DE9F100F28069 /* UIResponder+UIMenuController.swift in Sources */,
 				0A0562AE20F452B800FA1531 /* XHLoginViewController.swift in Sources */,
 				0A1405E420F2FD27009A6874 /* XHTabBarController.swift in Sources */,
 				0A1405E920F30401009A6874 /* UIColor+Hex.swift in Sources */,
 				0A0328A620FF1E3300BE625F /* XHChatBar.swift in Sources */,
 				0A0611E620FDB89800F856F2 /* XHMessage.swift in Sources */,
 				0A04CC4520F5E5BD00C25145 /* XHDatabase.swift in Sources */,
+				0A296757210D560D00F28069 /* XHMessageHeader.swift in Sources */,
+				0ADE55D72126507A0030FA7F /* XHLabel.swift in Sources */,
+				0A382C87210EE7EC00E748E5 /* XHFriendSelectController.swift in Sources */,
+				0A23647821084A7E00FF69F7 /* XHAudioManager.swift in Sources */,
+				0A382C85210EE65A00E748E5 /* XHMessageTranspondable.swift in Sources */,
 				0A0328A020FEC80700BE625F /* XHBadgeView.swift in Sources */,
 				0A04CC4220F5E0FC00C25145 /* XHConfig.swift in Sources */,
 			);

@@ -46,5 +46,10 @@ class XHFriend: XHUser {
     /// 添加来源
     private(set) var sourceType: XHFriendSourceType = .wxCode
     
+}
+
+class XHMainUser: XHUser {
+    
+    var expressionCollections: [XHEmotionBag]?
     
 }

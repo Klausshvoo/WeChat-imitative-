@@ -57,11 +57,13 @@ class XHChatBar: UIView {
         moreButton.widthAnchor.constraint(equalToConstant: width).isActive = true
         moreButton.keyboardType = .more
         moreButton.addTarget(self, action: #selector(moreButtomClick(_:)), for: .touchUpInside)
+        moreButton.inputDelegate = self
         expressionButton.rightAnchor.constraint(equalTo: moreButton.leftAnchor, constant: -6).isActive = true
         expressionButton.bottomAnchor.constraint(equalTo: audioButton.bottomAnchor).isActive = true
         expressionButton.addTarget(self, action: #selector(expressionButtonClick(_:)), for: .touchUpInside)
         expressionButton.setImage(#imageLiteral(resourceName: "ToolViewKeyboard"), for: .selected)
-        expressionButton.inputEmotionDelegate = self
+        expressionButton.inputDelegate = self
+        expressionButton.associatedInputView = textView
         textView.layer.cornerRadius = 5
         textView.layer.masksToBounds = true
         textView.delegate = self
@@ -94,6 +96,16 @@ class XHChatBar: UIView {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    /// 恢复初始状态
+    func resume() {
+        if expressionButton.isFirstResponder {
+            expressionButton.isSelected = false
+            expressionButton.setImage(#imageLiteral(resourceName: "ToolViewEmotionHL"), for: .highlighted)
+        } else if moreButton.isFirstResponder {
+            moreButton.isSelected = false
+        }
     }
     
     private func configureTextView() {
@@ -328,6 +340,14 @@ extension XHChatBar: XHChatBarExpressionKeyboardDelegate {
     
 }
 
+extension XHChatBar: XHChatBarMoreKeyboardDelegate {
+    
+    func keyboard(_ keyboard: XHChatBarMoreKeyboard, didSelectAction type: XHChatBarActionType) {
+        delegate?.chatBar(self, shouldHandleAction: type)
+    }
+    
+}
+
 // MARK: - XHAudioManagerRecordingDelegate
 extension XHChatBar: XHAudioManagerRecordingDelegate {
     
@@ -367,18 +387,32 @@ fileprivate class XHChatBarButton: UIButton {
         return true
     }
     
-    weak var inputEmotionDelegate: XHChatBarExpressionKeyboardDelegate?
+    override func becomeFirstResponder() -> Bool {
+        if isFirstResponder {
+            resignFirstResponder()
+        }
+        return super.becomeFirstResponder()
+    }
+    
+    weak var inputDelegate: XHChatBarKeyboardDelegate?
     
     var keyboardType: XHChatBarKeyboardType = .expression
+    
+    weak var associatedInputView: XHEmotionKeyboardAssociatedInputView?
     
     override var inputView: UIView? {
         switch keyboardType {
         case .expression:
-            let keyboard = XHChatBarExpressionKeyboard()
-            keyboard.delegate = self.inputEmotionDelegate
+            let keyboard = XHChatBarExpressionKeyboard.shared
+            keyboard.animationShow()
+            keyboard.delegate = self.inputDelegate
+            keyboard.associatedInputView = associatedInputView
             return keyboard
         case .more:
-            return XHChatBarMoreKeyboard()
+            let keyboard = XHChatBarMoreKeyboard.shared
+            keyboard.animationShow()
+            keyboard.delegate = self.inputDelegate
+            return keyboard
         }
     }
     
@@ -398,7 +432,13 @@ fileprivate class XHChatBarTextView: UITextView {
 }
 
 enum XHChatBarActionType: Int {
-    case addEmotionBag,setEmotionBags,selectPhotoes,takePhoto,videoCall,location,redbag,transfer,speechInput,infoCard,collection,files,cards
+    
+    case addEmotionBag,setEmotionBags,selectPhotoes,takePhoto,videoCall,location,redbag,transfer,speechInput,collection,infoCard,files,wallet
+    
+    static func allMoreActionTypes() -> [XHChatBarActionType] {
+        return [.selectPhotoes,.takePhoto,.videoCall,.location,.redbag,.transfer,.speechInput,.collection,.infoCard,.files,.wallet]
+    }
+    
 }
 
 protocol XHChatBarDelegate: NSObjectProtocol {

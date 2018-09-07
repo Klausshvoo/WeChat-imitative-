@@ -122,9 +122,9 @@ class XHLoginViewController: UIViewController {
     }
     
     @objc private func nextStep() {
-        if let delegate = UIApplication.shared.delegate,let window = delegate.window {
-            window?.rootViewController?.dismiss(animated: true, completion: nil)
-            window?.rootViewController = XHTabBarController()
+        if let delegate = UIApplication.shared.delegate as? AppDelegate,let window = delegate.window {
+            window.makeKeyAndVisible()
+            delegate.releaseLoginWindow()
         }
     }
     

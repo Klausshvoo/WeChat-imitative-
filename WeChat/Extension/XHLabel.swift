@@ -34,7 +34,7 @@ class XHLabel: UIView {
         super.init(frame: frame)
         tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         addGestureRecognizer(tapGestureRecognizer)
-        backgroundColor = UIColor.red
+        backgroundColor = UIColor.clear
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -153,7 +153,6 @@ class XHLabel: UIView {
     private var defaultAttributedInfo: [NSAttributedStringKey: [NSRange]] = [:]
     
     override func draw(_ rect: CGRect) {
-        print(rect)
         let maxWidth = bounds.width - (contentInset.left + contentInset.right)
         let maxHeight = bounds.height - (contentInset.top + contentInset.bottom)
         
@@ -370,35 +369,21 @@ class XHLabel: UIView {
     private var fontSize: CGFloat = 15
 
     override var intrinsicContentSize: CGSize {
-        print(bounds)
         let textWidth = ceilf(Float(attributedDrawText.size().width))
+        if preferredMaxLayoutWidth == 0 {
+            return CGSize(width: CGFloat(textWidth) + contentInset.left + contentInset.right, height: contentInset.top + contentInset.bottom + CGFloat(ceilf(Float(attributedDrawText.size().height))))
+        }
+        let maxWidth = preferredMaxLayoutWidth - (contentInset.left + contentInset.right)
+        // 初始化framesetter
+        let framesetter = CTFramesetterCreateWithAttributedString(attributedDrawText)
+        // 获取建议大小
+        let suggestTextSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, attributedDrawText.length), nil, CGSize(width: maxWidth, height: CGFloat(LONG_MAX)), nil)
         let textHeight = ceilf(Float(suggestTextSize.height))
         return CGSize(width: CGFloat(textWidth) + contentInset.left + contentInset.right, height: contentInset.top + contentInset.bottom + CGFloat(textHeight))
     }
     
-    override func invalidateIntrinsicContentSize() {
-        layoutIfNeeded()
-        super.invalidateIntrinsicContentSize()
-    }
-    
-    override func updateConstraints() {
-        print("updateConstraints\(bounds)")
-        let maxWidth = bounds.width - (contentInset.left + contentInset.right)
-        // 初始化framesetter
-        let framesetter = CTFramesetterCreateWithAttributedString(attributedDrawText)
-        // 获取建议大小
-        suggestTextSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, attributedDrawText.length), nil, CGSize(width: maxWidth, height: CGFloat(LONG_MAX)), nil)
-        invalidateIntrinsicContentSize()
-        super.updateConstraints()
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        print("layoutSubviews\(bounds)")
-        layoutIfNeeded()
-    }
-    
-    var suggestTextSize: CGSize = .zero
+    /// 如要支持自动适配高度换行，需要给该属性赋值，确认最大宽度（layout使用）
+    var preferredMaxLayoutWidth: CGFloat = 0
     
     private func resetDefaultAttributedText(_ attributedText: NSMutableAttributedString,for key: NSAttributedStringKey) {
         var effectRanges: [NSRange]?

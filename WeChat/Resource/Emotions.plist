@@ -592,12 +592,6 @@
 	</dict>
 	<dict>
 		<key>imageName</key>
-		<string>Expression_99</string>
-		<key>title</key>
-		<string>[]</string>
-	</dict>
-	<dict>
-		<key>imageName</key>
 		<string>Expression_100</string>
 		<key>title</key>
 		<string>[投降]</string>

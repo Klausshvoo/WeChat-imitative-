@@ -20,7 +20,7 @@ class XHMessageCell: UITableViewCell {
         avatarView.translatesAutoresizingMaskIntoConstraints = false
         avatarView.widthAnchor.constraint(equalToConstant: 40).isActive = true
         avatarView.heightAnchor.constraint(equalTo: avatarView.widthAnchor).isActive = true
-        avatarView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4).isActive = true
+        avatarView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2).isActive = true
         avatarView.layer.cornerRadius = 5
         avatarView.layer.masksToBounds = true
         if let reuseIdentifier = reuseIdentifier,reuseIdentifier.hasSuffix("To") {
@@ -50,6 +50,15 @@ fileprivate class XHMessageBubbleiew: UIImageView {
     
     weak var delegate: XHMessageBubbleiewDelegate?
     
+    override var image: UIImage? {
+        set {
+            super.image = newValue?.resizableImage(withCapInsets: UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 15), resizingMode: .stretch)
+        }
+        get {
+            return super.image
+        }
+    }
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         isUserInteractionEnabled = true
@@ -69,6 +78,10 @@ fileprivate class XHMessageBubbleiew: UIImageView {
         } else if sender.state == .ended {
             delegate?.bubbleViewDidLongPressUp(self)
         }
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: 40, height: 54)
     }
     
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
@@ -147,11 +160,11 @@ class XHMessageBubbleCell: XHMessageCell,XHMessageBubbleiewDelegate {
         if let reuseIdentifier = reuseIdentifier,reuseIdentifier.hasSuffix("To") {
             bubbleView.leftAnchor.constraint(equalTo: avatarView.rightAnchor, constant: 5).isActive = true
             bubbleView.rightAnchor.constraint(lessThanOrEqualTo: contentView.rightAnchor, constant: -70).isActive = true
-            bubbleView.image = #imageLiteral(resourceName: "ReceiverTextNodeBkg").resizableImage(withCapInsets: UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 15), resizingMode: .stretch)
+            bubbleView.image = #imageLiteral(resourceName: "ReceiverTextNodeBkg")
         } else {
             bubbleView.rightAnchor.constraint(equalTo: avatarView.leftAnchor, constant: -5).isActive = true
             bubbleView.leftAnchor.constraint(greaterThanOrEqualTo: contentView.leftAnchor, constant: 70).isActive = true
-            bubbleView.image = #imageLiteral(resourceName: "SenderTextNodeBkg").resizableImage(withCapInsets: UIEdgeInsets(top: 30, left: 15, bottom: 20, right: 15), resizingMode: .stretch)
+            bubbleView.image = #imageLiteral(resourceName: "SenderTextNodeBkg")
         }
     }
     
@@ -174,14 +187,14 @@ class XHTextMessageCell: XHMessageBubbleCell {
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         bubbleView.addSubview(contentLabel)
-        contentLabel.font = UIFont.systemFont(ofSize: 15)
+        contentLabel.lineSpacing = 3
         contentLabel.numberOfLines = 0
         contentLabel.translatesAutoresizingMaskIntoConstraints = false
-        contentLabel.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor, constant:  -3).isActive = true
         contentLabel.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor).isActive = true
-        contentLabel.topAnchor.constraint(equalTo: avatarView.topAnchor, constant: 10).isActive = true
+        contentLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 12).isActive = true
         contentLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -20).isActive = true
         contentLabel.leftAnchor.constraint(equalTo: bubbleView.leftAnchor, constant: 20).isActive = true
+        contentLabel.preferredMaxLayoutWidth = UIScreen.main.bounds.width - 163
         contentLabel.delegate = self
     }
     

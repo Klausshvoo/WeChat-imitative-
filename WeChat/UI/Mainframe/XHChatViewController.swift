@@ -111,6 +111,7 @@ extension XHChatViewController: XHKeyboardObserver {
     
     func keyboardWillHide(_ noti: Notification) {
         guard isTop else { return }
+        chatBar.resume()
         chatBar.transform = .identity
         var contentInset = tableView.contentInset
         contentInset.bottom = 0

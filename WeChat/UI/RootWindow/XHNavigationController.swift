@@ -38,12 +38,7 @@ class XHBlackNavigationController: XHNavigationController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white,.font: UIFont.boldSystemFont(ofSize: 20)]
-        navigationBar.barStyle = .black
-        navigationBar.barTintColor = UIColor.black
-        let item = UIBarButtonItem.appearance(whenContainedInInstancesOf: [XHBlackNavigationController.self])
-        item.setTitleTextAttributes([.foregroundColor: UIColor.white,.font: UIFont.boldSystemFont(ofSize: 17)], for: .normal)
-        item.tintColor = UIColor.white
+        setBlackBar()
     }
     
 }
@@ -61,6 +56,19 @@ extension UIBarButtonItem {
         button.addTarget(target, action: action, for: .touchUpInside)
         button.sizeToFit()
         self.init(customView: button)
+    }
+    
+}
+
+extension UINavigationController {
+    
+    func setBlackBar() {
+        navigationBar.titleTextAttributes = [.foregroundColor: UIColor.white,.font: UIFont.boldSystemFont(ofSize: 20)]
+        navigationBar.barStyle = .black
+        navigationBar.barTintColor = UIColor.black
+        let item = UIBarButtonItem.appearance(whenContainedInInstancesOf: [type(of: self)])
+        item.setTitleTextAttributes([.foregroundColor: UIColor.white,.font: UIFont.boldSystemFont(ofSize: 17)], for: .normal)
+        item.tintColor = UIColor.white
     }
     
 }

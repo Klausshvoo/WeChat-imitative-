@@ -433,10 +433,10 @@ fileprivate class XHChatBarTextView: UITextView {
 
 enum XHChatBarActionType: Int {
     
-    case addEmotionBag,setEmotionBags,selectPhotoes,takePhoto,videoCall,location,redbag,transfer,speechInput,collection,infoCard,files,wallet
+    case addEmotionBag,setEmotionBags,photoLibrary,takePhoto,videoCall,location,redbag,transfer,speechInput,collection,infoCard,files,wallet
     
     static func allMoreActionTypes() -> [XHChatBarActionType] {
-        return [.selectPhotoes,.takePhoto,.videoCall,.location,.redbag,.transfer,.speechInput,.collection,.infoCard,.files,.wallet]
+        return [.photoLibrary,.takePhoto,.videoCall,.location,.redbag,.transfer,.speechInput,.collection,.infoCard,.files,.wallet]
     }
     
 }

@@ -817,7 +817,7 @@ fileprivate extension XHChatBarActionType {
     
     var iconImage: UIImage? {
         switch self {
-        case .selectPhotoes:
+        case .photoLibrary:
             return #imageLiteral(resourceName: "sharemore_pic")
         case .takePhoto:
             return #imageLiteral(resourceName: "sharemore_video")

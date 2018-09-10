@@ -166,7 +166,14 @@ extension XHChatViewController: XHChatBarDelegate {
     }
     
     func chatBar(_ chatBar: XHChatBar, shouldHandleAction type: XHChatBarActionType) {
-        
+        switch type {
+        case .photoLibrary:
+            let imagePicker = XHImagePickerController()
+            imagePicker.uiDelegate = self
+            present(XHImagePickerController(), animated: true, completion: nil)
+        default:
+            break
+        }
     }
     
     func chatBarDidBeginRecording(_ chatBar: XHChatBar) {
@@ -189,6 +196,14 @@ extension XHChatViewController: XHMessageTranspondable {
     
     func presentedViewControllerForTranspond() -> UIViewController {
         return navigationController ?? self
+    }
+    
+}
+
+extension XHChatViewController: XHImagePickerControllerDelegate {
+    
+    func imagePickerController(_ picker: XHImagePickerController, didFinishPickingMediaAssets assets: [XHPhotoAsset]) {
+        
     }
     
 }

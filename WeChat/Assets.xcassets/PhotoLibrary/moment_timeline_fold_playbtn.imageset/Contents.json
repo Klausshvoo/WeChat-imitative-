@@ -6,11 +6,12 @@
     },
     {
       "idiom" : "universal",
-      "filename" : "EmoticonBigTipsRight@2x.png",
+      "filename" : "moment_timeline_fold_playbtn@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
+      "filename" : "moment_timeline_fold_playbtn@3x.png",
       "scale" : "3x"
     }
   ],

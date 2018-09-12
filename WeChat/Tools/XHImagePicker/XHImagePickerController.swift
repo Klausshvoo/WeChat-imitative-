@@ -1090,7 +1090,7 @@ fileprivate class XHPhotoBrowseController: UIViewController {
         return temp
     }()
     
-    private let navigationBar = XHBrowseNavigationBar()
+    private let navigationBar = XHNavigationBar()
     
     private let indexBar = XHAssetIndexBar()
     
@@ -1154,9 +1154,7 @@ fileprivate class XHPhotoBrowseController: UIViewController {
         button.widthAnchor.constraint(equalToConstant: 33).isActive = true
         button.heightAnchor.constraint(equalTo: button.widthAnchor).isActive = true
         button.addTarget(self, action: #selector(selectAsset), for: .touchUpInside)
-        customView.translatesAutoresizingMaskIntoConstraints = false
-        customView.heightAnchor.constraint(equalToConstant: 44).isActive = true
-        customView.widthAnchor.constraint(equalToConstant: 33).isActive = true
+        customView.bounds = CGRect(origin: .zero, size: CGSize(width: 33, height: 44))
         customView.addSubview(selectNavigationBarLabel)
         selectNavigationBarLabel.translatesAutoresizingMaskIntoConstraints = false
         selectNavigationBarLabel.centerXAnchor.constraint(equalTo: customView.centerXAnchor).isActive = true
@@ -1321,7 +1319,16 @@ extension XHPhotoBrowseController: UICollectionViewDelegate {
 extension XHPhotoBrowseController: XHPhotoSelectBarDelegate {
     
     func selectBarDidRespondsTypeAction(_ bar: XHPhotoSelectBar) {
-        // 进入编辑模式
+        let asset = assets[currentIndex]
+        if let image = asset.image {
+            let editController = XHImageEditController(image: image)
+            editController.modalTransitionStyle = .crossDissolve
+            present(editController, animated: true) {[weak self] in
+                if let weakSelf = self {
+                    weakSelf.collectionView.reloadItems(at: [IndexPath(item: weakSelf.currentIndex, section: 0)])
+                }
+            }
+        }
     }
     
     func selectBarShouldSendSelectedAssets(_ bar: XHPhotoSelectBar) {
@@ -1446,66 +1453,6 @@ fileprivate class XHPhotoBrowseCell: UICollectionViewCell {
     
     deinit {
         asset.cancelOriginRequest()
-    }
-    
-}
-
-fileprivate class XHBrowseNavigationBar: UIView {
-    
-    class XHToolBar: UIToolbar {
-        
-        override init(frame: CGRect) {
-            super.init(frame: frame)
-            isOpaque = false
-            barTintColor = UIColor.clear
-            clearsContextBeforeDrawing = true
-        }
-        
-        override func draw(_ rect: CGRect) {}
-        
-        required init?(coder aDecoder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
-        }
-        
-        override var intrinsicContentSize: CGSize {
-            return CGSize(width: UIScreen.main.bounds.width, height: 44)
-        }
-    }
-    
-    private var toolBar = XHToolBar()
-    
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        addSubview(toolBar)
-        toolBar.translatesAutoresizingMaskIntoConstraints = false
-        toolBar.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        toolBar.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    var items: [UIBarButtonItem]? {
-        set {
-            toolBar.items = newValue
-        }
-        get {
-            return toolBar.items
-        }
-    }
-    
-    var barTintColor: UIColor? {
-        set {
-            backgroundColor = newValue
-        }
-        get {
-            return backgroundColor
-        }
-    }
-    
-    override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIScreen.main.bounds.width, height: 64)
     }
     
 }
@@ -1678,3 +1625,5 @@ fileprivate extension UIAlertController {
     }
     
 }
+
+

@@ -156,7 +156,7 @@ class XHMessageBubbleCell: XHMessageCell,XHMessageBubbleiewDelegate {
         bubbleView.delegate = self
         bubbleView.translatesAutoresizingMaskIntoConstraints = false
         bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
-        bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor).isActive = true
+        contentView.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor).isActive = true
         if let reuseIdentifier = reuseIdentifier,reuseIdentifier.hasSuffix("To") {
             bubbleView.leftAnchor.constraint(equalTo: avatarView.rightAnchor, constant: 5).isActive = true
             bubbleView.rightAnchor.constraint(lessThanOrEqualTo: contentView.rightAnchor, constant: -70).isActive = true

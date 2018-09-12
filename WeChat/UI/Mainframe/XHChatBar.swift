@@ -98,6 +98,10 @@ class XHChatBar: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        textView.removeObserver(self, forKeyPath: "contentSize")
+    }
+    
     /// 恢复初始状态
     func resume() {
         if expressionButton.isFirstResponder {

@@ -327,7 +327,7 @@ class XHLabel: UIView {
     }
     
     private func regularEmotion(for text: Any?) -> NSMutableAttributedString {
-        var attributedText: NSMutableAttributedString = NSMutableAttributedString(string: "")
+        var attributedText = NSMutableAttributedString(string: "")
         guard let string = text else { return attributedText }
         if let text = string as? String {
             attributedText = NSMutableAttributedString(string: text)
@@ -343,7 +343,7 @@ class XHLabel: UIView {
             let filter = XHEmotionBag.defaultBag.emotions.filter({ $0.title == emotionTitle })
             if let emotion = filter.first,let title = emotion.title,title == emotionTitle {
                 let attribtuedString = NSMutableAttributedString(string: " ")
-                var runDelegateCallBacks = CTRunDelegateCallbacks(version: kCTRunDelegateVersion1, dealloc: { (pointer) in
+                var runDelegateCallBacks = CTRunDelegateCallbacks(version: kCTRunDelegateCurrentVersion, dealloc: { (pointer) in
                 }, getAscent: { (pointer) -> CGFloat in
                     let fontSize = pointer.load(as: CGFloat.self)
                     let font = UIFont.systemFont(ofSize: fontSize)
@@ -369,6 +369,12 @@ class XHLabel: UIView {
     private var fontSize: CGFloat = 15
 
     override var intrinsicContentSize: CGSize {
+        let label = UILabel()
+        label.preferredMaxLayoutWidth = preferredMaxLayoutWidth
+        label.numberOfLines = 0
+        label.attributedText = attributedDrawText
+        label.sizeToFit()
+        print(label.bounds)
         let textWidth = ceilf(Float(attributedDrawText.size().width))
         if preferredMaxLayoutWidth == 0 {
             return CGSize(width: CGFloat(textWidth) + contentInset.left + contentInset.right, height: contentInset.top + contentInset.bottom + CGFloat(ceilf(Float(attributedDrawText.size().height))))
@@ -377,7 +383,7 @@ class XHLabel: UIView {
         // 初始化framesetter
         let framesetter = CTFramesetterCreateWithAttributedString(attributedDrawText)
         // 获取建议大小
-        let suggestTextSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, attributedDrawText.length), nil, CGSize(width: maxWidth, height: CGFloat(LONG_MAX)), nil)
+        let suggestTextSize = CTFramesetterSuggestFrameSizeWithConstraints(framesetter, CFRangeMake(0, attributedDrawText.length), nil, CGSize(width: maxWidth, height: CGFloat.greatestFiniteMagnitude), nil)
         let textHeight = ceilf(Float(suggestTextSize.height))
         return CGSize(width: CGFloat(textWidth) + contentInset.left + contentInset.right, height: contentInset.top + contentInset.bottom + CGFloat(textHeight))
     }

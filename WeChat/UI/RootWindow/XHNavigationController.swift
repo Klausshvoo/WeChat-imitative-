@@ -68,7 +68,7 @@ extension UINavigationController {
         navigationBar.barTintColor = UIColor.black
         let item = UIBarButtonItem.appearance(whenContainedInInstancesOf: [type(of: self)])
         item.setTitleTextAttributes([.foregroundColor: UIColor.white,.font: UIFont.boldSystemFont(ofSize: 17)], for: .normal)
-        item.tintColor = UIColor.white
+        navigationBar.tintColor = UIColor.white
     }
     
 }

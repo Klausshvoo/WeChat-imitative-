@@ -712,7 +712,7 @@ class XHChatBarMoreKeyboard: XHChatBarKeyboard {
         flowLayout.itemSize = CGSize(width: 60, height: 60)
         let margin = (bounds.width - 4 * 60) / 5
         flowLayout.minimumLineSpacing = margin
-        flowLayout.minimumInteritemSpacing = 12
+        flowLayout.minimumInteritemSpacing = 11
         flowLayout.sectionInset = UIEdgeInsets(top: 20, left: margin, bottom: 10, right: margin)
         colletionView.heightAnchor.constraint(equalToConstant: collectionHeight + 34).isActive = true
         colletionView.register(XHChatBarMoreKeyboardCell.self, forCellWithReuseIdentifier: "cell")

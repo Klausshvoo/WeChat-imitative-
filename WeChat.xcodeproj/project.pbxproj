@@ -50,6 +50,8 @@
 		0AADEB9220F73CBE00E96757 /* UIImage+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */; };
 		0AC6E5CB21426BB000B967E6 /* XHImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */; };
 		0ADE55D72126507A0030FA7F /* XHLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADE55D62126507A0030FA7F /* XHLabel.swift */; };
+		0AF0355B214609A100BE0255 /* XHImageEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF0355A214609A100BE0255 /* XHImageEditController.swift */; };
+		0AF0355D2146117400BE0255 /* XHNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF0355C2146117400BE0255 /* XHNavigationBar.swift */; };
 		B0ABBD603D24BCA437B462C7 /* Pods_WeChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA685CC0C732FD9D5AC8BB0 /* Pods_WeChat.framework */; };
 /* End PBXBuildFile section */
 
@@ -100,6 +102,8 @@
 		0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Color.swift"; sourceTree = "<group>"; };
 		0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHImagePickerController.swift; sourceTree = "<group>"; };
 		0ADE55D62126507A0030FA7F /* XHLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XHLabel.swift; sourceTree = "<group>"; };
+		0AF0355A214609A100BE0255 /* XHImageEditController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHImageEditController.swift; sourceTree = "<group>"; };
+		0AF0355C2146117400BE0255 /* XHNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHNavigationBar.swift; sourceTree = "<group>"; };
 		53BCCA3007630655F005EA2E /* Pods-WeChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-WeChat/Pods-WeChat.release.xcconfig"; sourceTree = "<group>"; };
 		B82088520B7EEB4D69F4D296 /* Pods-WeChat.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WeChat/Pods-WeChat.debug.xcconfig"; sourceTree = "<group>"; };
 		EBA685CC0C732FD9D5AC8BB0 /* Pods_WeChat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WeChat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -319,6 +323,8 @@
 			children = (
 				0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */,
 				0A9588272143F738002087D6 /* XHZoomableImageView.swift */,
+				0AF0355A214609A100BE0255 /* XHImageEditController.swift */,
+				0AF0355C2146117400BE0255 /* XHNavigationBar.swift */,
 			);
 			path = XHImagePicker;
 			sourceTree = "<group>";
@@ -463,6 +469,8 @@
 				0A1405CE20F2F515009A6874 /* AppDelegate.swift in Sources */,
 				0A9B282A210C968700FA638A /* XHMessageCell.swift in Sources */,
 				0A1405E120F2F73A009A6874 /* XHWindow.swift in Sources */,
+				0AF0355D2146117400BE0255 /* XHNavigationBar.swift in Sources */,
+				0AF0355B214609A100BE0255 /* XHImageEditController.swift in Sources */,
 				0AADEB9020F6FB4F00E96757 /* XHAreaViewController.swift in Sources */,
 				0A0328A220FF0ADE00BE625F /* XHChatViewController.swift in Sources */,
 				0AC6E5CB21426BB000B967E6 /* XHImagePickerController.swift in Sources */,

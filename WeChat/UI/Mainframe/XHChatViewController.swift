@@ -58,7 +58,8 @@ class XHChatViewController: UIViewController {
         tableView.topAnchor.constraint(equalTo: view.layoutMarginsGuide.topAnchor).isActive = true
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-        tableView.estimatedRowHeight = UITableViewAutomaticDimension
+        tableView.estimatedRowHeight = 120
+        tableView.rowHeight = UITableViewAutomaticDimension
         tableView.register(XHMessageHeader.self, forHeaderFooterViewReuseIdentifier: "header")
         tableView.sectionHeaderHeight = 40
         tableView.register(XHTextMessageCell.self, forType: .text)

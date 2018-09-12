@@ -60,6 +60,8 @@ class XHLabel: UIView {
     
     private var _text: String?
     
+    private var emotionsWidthAdjust: CGFloat = 0
+    
     var attributedText: NSAttributedString? {
         set {
             _text = nil
@@ -296,6 +298,7 @@ class XHLabel: UIView {
         defaultAttributedInfo.removeAll()
         attributedText.enumerateAttributes(in: NSMakeRange(0, attributedText.length), options: .reverse) { (attributes, range, _) in
             let keys = attributes.keys
+            guard !keys.contains(.imageName) else { return }
             if !keys.contains(.font) {
                 appendRange(range, for: .font)
                 attributedText.addAttribute(.font, value: font, range: range)
@@ -367,15 +370,23 @@ class XHLabel: UIView {
     }
     
     private var fontSize: CGFloat = 15
+    
+    private func getSuggestWidth() -> CGFloat {
+        var width: CGFloat = 0
+        attributedDrawText.enumerateAttributes(in: NSMakeRange(0, attributedDrawText.length), options: .reverse) { (attributes, range, _) in
+            let keys = attributes.keys
+            if keys.contains(.imageName) {
+                width += font.lineHeight
+            } else {
+                let attributedString = attributedDrawText.attributedSubstring(from: range)
+                width += attributedString.size().width
+            }
+        }
+        return width
+    }
 
     override var intrinsicContentSize: CGSize {
-        let label = UILabel()
-        label.preferredMaxLayoutWidth = preferredMaxLayoutWidth
-        label.numberOfLines = 0
-        label.attributedText = attributedDrawText
-        label.sizeToFit()
-        print(label.bounds)
-        let textWidth = ceilf(Float(attributedDrawText.size().width))
+        let textWidth = ceilf(Float(getSuggestWidth()))
         if preferredMaxLayoutWidth == 0 {
             return CGSize(width: CGFloat(textWidth) + contentInset.left + contentInset.right, height: contentInset.top + contentInset.bottom + CGFloat(ceilf(Float(attributedDrawText.size().height))))
         }

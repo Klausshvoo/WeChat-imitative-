@@ -60,8 +60,6 @@ class XHLabel: UIView {
     
     private var _text: String?
     
-    private var emotionsWidthAdjust: CGFloat = 0
-    
     var attributedText: NSAttributedString? {
         set {
             _text = nil
@@ -152,7 +150,7 @@ class XHLabel: UIView {
     
     private var bottomInset: CGFloat = 0
     
-    private var defaultAttributedInfo: [NSAttributedStringKey: [NSRange]] = [:]
+    private var defaultAttributedInfo: [NSAttributedString.Key: [NSRange]] = [:]
     
     override func draw(_ rect: CGRect) {
         let maxWidth = bounds.width - (contentInset.left + contentInset.right)
@@ -210,10 +208,10 @@ class XHLabel: UIView {
             let run = unsafeBitCast(CFArrayGetValueAtIndex(runs, index), to: CTRun.self)
             let attributes = CTRunGetAttributes(run) as NSDictionary
             let keys = attributes.allKeys as! [String]
-            if keys.contains(NSAttributedStringKey.imageName.rawValue) {
+            if keys.contains(NSAttributedString.Key.imageName.rawValue) {
                 var ascent: CGFloat = 0;
                 var descent: CGFloat = 0;
-                let imageName = attributes[NSAttributedStringKey.imageName.rawValue] as! String
+                let imageName = attributes[NSAttributedString.Key.imageName.rawValue] as! String
                 let image = UIImage(named: imageName)!
                 let width = CTRunGetTypographicBounds(run, CFRangeMake(0, 0), &ascent, &descent, nil)
                 let x = context.textPosition.x + CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, nil)
@@ -318,7 +316,7 @@ class XHLabel: UIView {
         }
     }
     
-    private func appendRange(_ range: NSRange,for key: NSAttributedStringKey) {
+    private func appendRange(_ range: NSRange,for key: NSAttributedString.Key) {
         var ranges: [NSRange]
         if let old = defaultAttributedInfo[key] {
             ranges = old
@@ -361,7 +359,7 @@ class XHLabel: UIView {
                     return font.lineHeight
                 }
                 let runDelegate = CTRunDelegateCreate(&runDelegateCallBacks, &fontSize)!
-                attribtuedString.addAttribute(kCTRunDelegateAttributeName as NSAttributedStringKey, value: runDelegate, range: NSMakeRange(0, 1))
+                attribtuedString.addAttribute(kCTRunDelegateAttributeName as NSAttributedString.Key, value: runDelegate, range: NSMakeRange(0, 1))
                 attribtuedString.addAttribute(.imageName, value: emotion.imageName!, range: NSMakeRange(0, 1))
                 attributedText.replaceCharacters(in: result.range, with: attribtuedString)
             }
@@ -402,7 +400,7 @@ class XHLabel: UIView {
     /// 如要支持自动适配高度换行，需要给该属性赋值，确认最大宽度（layout使用）
     var preferredMaxLayoutWidth: CGFloat = 0
     
-    private func resetDefaultAttributedText(_ attributedText: NSMutableAttributedString,for key: NSAttributedStringKey) {
+    private func resetDefaultAttributedText(_ attributedText: NSMutableAttributedString,for key: NSAttributedString.Key) {
         var effectRanges: [NSRange]?
         for (infoKey,value) in defaultAttributedInfo {
             if key == infoKey {
@@ -434,9 +432,9 @@ class XHLabel: UIView {
     
 }
 
-fileprivate extension NSAttributedStringKey {
+fileprivate extension NSAttributedString.Key {
     
-    static let imageName = NSAttributedStringKey("imageName")
+    static let imageName = NSAttributedString.Key("imageName")
     
 }
 

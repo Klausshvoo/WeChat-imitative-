@@ -32,7 +32,7 @@ class XHTabBarController: UITabBarController {
         controller.tabBarItem.selectedImage = UIImage(named: "tabbar_\(imageName)HL")
         controller.tabBarItem.image = UIImage(named: "tabbar_\(imageName)")
         controller.tabBarItem.title = title
-        addChildViewController(navgationController)
+        addChild(navgationController)
     }
     
     override func didReceiveMemoryWarning() {

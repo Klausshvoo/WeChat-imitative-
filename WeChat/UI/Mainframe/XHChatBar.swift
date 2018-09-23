@@ -213,7 +213,7 @@ class XHChatBar: UIView {
         sender.backgroundColor = nil
     }
     
-    private func changeVoiceButtonTitle(for events: UIControlEvents) {
+    private func changeVoiceButtonTitle(for events: UIControl.Event) {
         var title: String
         if events.contains(.touchDown)  || events.contains(.touchDragInside) {
             title = "松开 结束"
@@ -458,4 +458,3 @@ protocol XHChatBarDelegate: NSObjectProtocol {
     func chatBardidChangeContentSize(_ chatBar: XHChatBar)
     
 }
-

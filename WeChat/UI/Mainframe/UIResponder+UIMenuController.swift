@@ -79,7 +79,7 @@ extension UIResponder {
         menuController.menuItems = items
         menuController.setTargetRect(rect, in: view)
         menuController.setMenuVisible(true, animated: true)
-        NotificationCenter.default.addObserver(self, selector: #selector(menuControllerShouldDismiss), name: .UIMenuControllerWillHideMenu, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(menuControllerShouldDismiss), name: UIMenuController.willHideMenuNotification, object: nil)
         return menuController
     }
     
@@ -93,7 +93,7 @@ extension UIResponder {
     @objc private func menuControllerShouldDismiss() {
         let menuController = UIMenuController.shared
         menuController.menuItems = nil
-        NotificationCenter.default.removeObserver(self, name: .UIMenuControllerWillHideMenu, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIMenuController.willHideMenuNotification, object: nil)
     }
     
 }

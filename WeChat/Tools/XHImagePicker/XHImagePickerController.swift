@@ -168,7 +168,7 @@ fileprivate class XHAlbumCell: UITableViewCell {
     
     private let countLabel = UILabel()
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(coverView)
         coverView.translatesAutoresizingMaskIntoConstraints = false
@@ -758,7 +758,7 @@ fileprivate class XHPhotoSelectBar: UIView {
         typeButton.contentHorizontalAlignment = .left
         typeButton.setTitleColor(UIColor.white, for: .normal)
         typeButton.setTitleColor(UIColor.grayText, for: .disabled)
-        typeButton.titleEdgeInsets = UIEdgeInsetsMake(0, 15, 0, 0)
+        typeButton.titleEdgeInsets = UIEdgeInsets(top: 0, left: 15, bottom: 0, right: 0)
         typeButton.addTarget(self, action: #selector(shouldRespondTypeAction), for: .touchUpInside)
         addSubview(sendButton)
         sendButton.translatesAutoresizingMaskIntoConstraints = false
@@ -1239,9 +1239,9 @@ fileprivate class XHPhotoBrowseController: UIViewController {
         didSet {
             guard isFront != oldValue else { return }
             if isFront {
-                view.bringSubview(toFront: collectionView)
+                view.bringSubviewToFront(collectionView)
             } else {
-                view.sendSubview(toBack: collectionView)
+                view.sendSubviewToBack(collectionView)
             }
         }
     }
@@ -1406,7 +1406,7 @@ fileprivate protocol XHPhotoBrowseControllerDelegate: NSObjectProtocol {
 
 fileprivate class XHPhotoBrowseCell: UICollectionViewCell {
     
-    private let imageView = XHZoomableImageView()
+    private let imageView = XHZoomableImageView(frame: .zero)
     
     private let playView = UIImageView(image: #imageLiteral(resourceName: "moment_timeline_fold_playbtn"))
     
@@ -1419,6 +1419,9 @@ fileprivate class XHPhotoBrowseCell: UICollectionViewCell {
         imageView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
         imageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         imageView.maximumZoomScale = 3
+        if #available(iOS 11.0, *) {
+            imageView.contentInsetAdjustmentBehavior = .never
+        }
         contentView.addSubview(playView)
         playView.isHidden = true
         playView.translatesAutoresizingMaskIntoConstraints = false

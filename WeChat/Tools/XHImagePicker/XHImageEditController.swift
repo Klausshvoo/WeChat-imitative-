@@ -21,7 +21,20 @@ class XHImageEditController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    private let imageView = XHZoomableImageView()
+    private lazy var zoomableView: XHZoomableView = {
+        let drawboard = XHImageEditboard(content: originalImage)
+        drawboard.sizeToFit()
+        drawboard.isUserInteractionEnabled = false
+        drawboard.addObserver(self, forKeyPath: "currentImage", options: .new, context: nil)
+        let temp = XHZoomableView(frame: .zero, zoomView: drawboard)
+        temp.doubleTapGestureRecognizer.isEnabled = false
+        temp.delegate = self
+        return temp
+    }()
+    
+    private var drawboard: XHImageEditboard {
+        return zoomableView.zoomView as! XHImageEditboard
+    }
     
     private var imageLeftConstraint: NSLayoutConstraint!
     
@@ -34,15 +47,14 @@ class XHImageEditController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setNeedsStatusBarAppearanceUpdate()
-        view.addSubview(imageView)
-        imageView.image = originalImage
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.maximumZoomScale = 3
-        imageLeftConstraint = imageView.leftAnchor.constraint(equalTo: view.leftAnchor)
+        view.addSubview(zoomableView)
+        zoomableView.translatesAutoresizingMaskIntoConstraints = false
+        zoomableView.maximumZoomScale = 3
+        imageLeftConstraint = zoomableView.leftAnchor.constraint(equalTo: view.leftAnchor)
         imageLeftConstraint.isActive = true
-        imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        imageTopConstraint = imageView.topAnchor.constraint(equalTo: view.topAnchor)
+        zoomableView.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        zoomableView.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
+        imageTopConstraint = zoomableView.topAnchor.constraint(equalTo: view.topAnchor)
         imageTopConstraint.isActive = true
         configureNavigationBar()
         configureEditBar()
@@ -83,6 +95,14 @@ class XHImageEditController: UIViewController {
         editBar.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         editBar.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if let drawboard = object as? XHDrawboard {
+            if let key = keyPath,key == "currentImage" {
+                editBar.setCanUndo(drawboard.canUndo, for: .pen)
+            }
+        }
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -90,7 +110,48 @@ class XHImageEditController: UIViewController {
 
 }
 
+extension XHImageEditController: XHZoomableViewDelegate {
+    
+    func zoomableView(_ zoomableView: XHZoomableView, didEndZoomingAtScale scale: CGFloat) {
+        drawboard.currentLineWidth /= scale
+    }
+    
+}
+
 extension XHImageEditController: XHImageEditBarDelegate {
+    
+    fileprivate func editBar(_ editBar: XHImageEditBar, didSelect editType: XHImageEditType,info: Any?) {
+        switch editType {
+        case .pen:
+            drawboard.isUserInteractionEnabled = true
+            zoomableView.isScrollEnabled = false
+            if let color = info as? UIColor {
+                drawboard.currentLineColor = color
+            }
+        default:
+            break
+        }
+    }
+    
+    fileprivate func editBar(_ editBar: XHImageEditBar, didDeselect editType: XHImageEditType) {
+        if editType == .pen {
+            drawboard.isUserInteractionEnabled = false
+            zoomableView.isScrollEnabled = true
+        }
+    }
+    
+    fileprivate func editBar(_ editBar: XHImageEditBar, shouldDrawLineWith color: UIColor) {
+        drawboard.currentLineColor = color
+    }
+    
+    fileprivate func editBar(_ editBar: XHImageEditBar, shouldUndoFor editType: XHImageEditType) {
+        switch editType {
+        case .pen:
+            drawboard.undo()
+        default:
+            break
+        }
+    }
     
 }
 
@@ -114,6 +175,18 @@ fileprivate enum XHImageEditType: Int {
     
 }
 
+fileprivate class XHImageEditboard: XHDrawboard {
+    
+    override var intrinsicContentSize: CGSize {
+        let size = super.intrinsicContentSize
+        let width = min(size.width, UIScreen.main.bounds.width - 20)
+        let scale = size.width / width
+        let height = size.height / scale
+        return CGSize(width: width, height: height)
+    }
+    
+}
+
 fileprivate class XHImageEditBar: UIView {
     
     private let toolBar = XHTranslucentToolBar()
@@ -125,6 +198,8 @@ fileprivate class XHImageEditBar: UIView {
     private let subBarContainer = UIView()
     
     private var subBarContainerConstraint: NSLayoutConstraint!
+    
+    var scale: CGFloat = 1
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -169,10 +244,10 @@ fileprivate class XHImageEditBar: UIView {
     private func buttonWithImageName(_ imageName: String) -> UIButton {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(named: imageName), for: .normal)
-        if let selectImage = UIImage(named: imageName + "_SEL_HL") {
+        if let selectImage = UIImage(named: imageName + "_HL") {
             button.setImage(selectImage, for: .selected)
         }
-        if let highlightImage = UIImage(named: imageName + "_HL") {
+        if let highlightImage = UIImage(named: imageName + "_SEL_HL") {
             button.setImage(highlightImage, for: .highlighted)
         }
         button.sizeToFit()
@@ -187,9 +262,11 @@ fileprivate class XHImageEditBar: UIView {
                 selectedItem.isSelected = false
                 let selectType = XHImageEditType(rawValue: selectedItem.tag)!
                 didDeselectEditType(selectType)
-                selectItem = nil
             }
-            guard selectItem != sender else { return }
+            guard selectItem != sender else {
+                selectItem = nil
+                return
+            }
             selectItem = sender
             sender.isSelected = true
             didSelectEditType(type)
@@ -198,9 +275,14 @@ fileprivate class XHImageEditBar: UIView {
         }
     }
     
-    private lazy var penBar: XHImageEditPenBar = XHImageEditPenBar()
+    private lazy var penBar: XHImageEditPenBar = {
+        let temp = XHImageEditPenBar()
+        temp.uiDelegate = self
+        return temp
+    }()
     
     private func didSelectEditType(_ type: XHImageEditType) {
+        var info: Any?
         switch type {
         case .pen:
             subBarContainer.addSubview(penBar)
@@ -210,9 +292,11 @@ fileprivate class XHImageEditBar: UIView {
             penBar.rightAnchor.constraint(equalTo: subBarContainer.rightAnchor).isActive = true
             subBarContainerConstraint.isActive = false
             penBar.topAnchor.constraint(equalTo: subBarContainer.topAnchor).isActive = true
+            info = penBar.currentColor
         default:
             break
         }
+        delegate?.editBar(self, didSelect: type,info: info)
     }
     
     private func didDeselectEditType(_ type: XHImageEditType) {
@@ -223,11 +307,41 @@ fileprivate class XHImageEditBar: UIView {
         default:
             break
         }
+        delegate?.editBar(self, didDeselect: type)
+    }
+    
+}
+
+extension XHImageEditBar: XHImageEditPenBarDelegate {
+    
+    func penBar(_ penBar: XHImageEditPenBar, didSelect color: XHImageEditPenColor) {
+        delegate?.editBar(self, shouldDrawLineWith: color.color)
+    }
+    
+    func penBarShouldUndo(_ penBar: XHImageEditPenBar) {
+        delegate?.editBar(self, shouldUndoFor: .pen)
+    }
+    
+    func setCanUndo(_ flag: Bool,for editType: XHImageEditType) {
+        switch editType {
+        case .pen:
+            penBar.canUndo = flag
+        default:
+            break
+        }
     }
     
 }
 
 fileprivate protocol XHImageEditBarDelegate: NSObjectProtocol {
+    
+    func editBar(_ editBar: XHImageEditBar,didSelect editType: XHImageEditType,info: Any?)
+    
+    func editBar(_ editBar: XHImageEditBar,didDeselect editType: XHImageEditType)
+    
+    func editBar(_ editBar: XHImageEditBar,shouldDrawLineWith color: UIColor)
+    
+    func editBar(_ editBar: XHImageEditBar,shouldUndoFor editType: XHImageEditType)
     
 }
 
@@ -263,14 +377,16 @@ fileprivate enum XHImageEditPenColor: Int {
 fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
     
     override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIViewNoIntrinsicMetric, height: 60)
+        return CGSize(width: UIScreen.main.bounds.width, height: 60)
     }
     
     private var selectItem: UIButton?
     
     private let revokeButton = UIButton(type: .custom)
     
-    var isCanRevoke: Bool {
+    weak var uiDelegate: XHImageEditPenBarDelegate?
+    
+    var canUndo: Bool {
         set {
             revokeButton.isEnabled = newValue
         }
@@ -290,7 +406,7 @@ fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
     override init(frame: CGRect) {
         super.init(frame: frame)
         configureItems()
-        isCanRevoke = false
+        canUndo = false
         let line = UIView()
         addSubview(line)
         line.translatesAutoresizingMaskIntoConstraints = false
@@ -299,6 +415,9 @@ fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
         line.heightAnchor.constraint(equalToConstant: 0.3).isActive = true
         line.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
         line.backgroundColor = UIColor(hex: 0x393939)
+        if let button = items?.first?.customView as? UIButton {
+            didSelectColor(button)
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -340,11 +459,18 @@ fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
         sender.isSelected = !sender.isSelected
         selectItem?.isSelected = false
         selectItem = sender
+        uiDelegate?.penBar(self, didSelect: XHImageEditPenColor(rawValue: sender.tag)!)
     }
     
     @objc private func shouldRevokeLastDraw(_ sender: UIButton) {
-        
+        uiDelegate?.penBarShouldUndo(self)
     }
 }
 
-
+fileprivate protocol XHImageEditPenBarDelegate: NSObjectProtocol {
+    
+    func penBar(_ penBar: XHImageEditPenBar,didSelect color: XHImageEditPenColor)
+    
+    func penBarShouldUndo(_ penBar: XHImageEditPenBar)
+    
+}

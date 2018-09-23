@@ -73,7 +73,7 @@ extension UIImage {
         if let info = Bundle.main.infoDictionary,let images = info["UILaunchImages"] as? [[String: Any]] {
             let filter = images.filter { (dic) -> Bool in
                 if let sizeString = dic["UILaunchImageSize"] as? String {
-                    let size = CGSizeFromString(sizeString)
+                    let size = NSCoder.cgSize(for: sizeString)
                     if size == UIScreen.main.bounds.size, let orientation = dic["UILaunchImageOrientation"] as? String, orientation == "Portrait" {
                         return true
                     }

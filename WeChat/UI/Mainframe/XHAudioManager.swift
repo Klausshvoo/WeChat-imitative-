@@ -69,19 +69,19 @@ class XHAudioManager: NSObject {
     
     // MARK: - Notifications
     private func addNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(audioSessionDidInterrupt(_:)), name: .AVAudioSessionInterruption, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(audioSessionDidRouteChange(_:)), name: .AVAudioSessionRouteChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioSessionDidInterrupt(_:)), name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(audioSessionDidRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
     }
     
     private func removeNotifications() {
-        NotificationCenter.default.removeObserver(self, name: .AVAudioSessionInterruption, object: nil)
-        NotificationCenter.default.removeObserver(self, name: .AVAudioSessionRouteChange, object: nil)
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.interruptionNotification, object: nil)
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
     }
     
     /// 音频被系统打断，则直接停止音频服务
     @objc private func audioSessionDidInterrupt(_ notification: Notification) {
         guard let info = notification.userInfo else { return }
-        guard let type = info[AVAudioSessionInterruptionTypeKey] as? AVAudioSessionInterruptionType,type == .began else { return }
+        guard let type = info[AVAudioSessionInterruptionTypeKey] as? AVAudioSession.InterruptionType,type == .began else { return }
         if let recorder = self.recorder,recorder.isRecording {
             cancelRecording()
             return;
@@ -98,14 +98,14 @@ class XHAudioManager: NSObject {
                 self?.cancelRecording()
             } else {
                 guard let info = notification.userInfo else { return }
-                guard let reason = info[AVAudioSessionRouteChangeReasonKey] as? AVAudioSessionRouteChangeReason else { return }
+                guard let reason = info[AVAudioSessionRouteChangeReasonKey] as? AVAudioSession.RouteChangeReason else { return }
                 switch reason {
                 case .newDeviceAvailable:
-                    if AVAudioSession.sharedInstance().category == AVAudioSessionCategoryPlayback {
+                    if AVAudioSession.sharedInstance().category == .playback {
                        self?.replay(isSpeakerOutput: false)
                     }
                 case .oldDeviceUnavailable:
-                    if AVAudioSession.sharedInstance().category == AVAudioSessionCategoryPlayAndRecord {
+                    if AVAudioSession.sharedInstance().category == .playAndRecord {
                         self?.replay(isSpeakerOutput: true)
                     }
                 default:
@@ -123,7 +123,9 @@ class XHAudioManager: NSObject {
         stopPlaying()
         var aError: XHAudioPlayError?
         do {
-            try AVAudioSession.sharedInstance().setCategory(flag ? AVAudioSessionCategoryPlayback : AVAudioSessionCategoryPlayAndRecord)
+            
+//            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: <#T##AVAudioSession.CategoryOptions#>)
+//            try AVAudioSession.sharedInstance().setCategory(flag ? convertFromAVAudioSessionCategory(AVAudioSession.Category.playback) : convertFromAVAudioSessionCategory(AVAudioSession.Category.playAndRecord))
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             aError = .noDevice
@@ -145,7 +147,7 @@ class XHAudioManager: NSObject {
     /// 监测是否可以用扬声器播放（有没有插耳机）
     func canPlayBackWithSpeaker() -> Bool {
         let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
-        let filter = outputs.filter({ $0.portType == AVAudioSessionPortHeadphones })
+        let filter = outputs.filter({ $0.portType == .headphones })
         return filter.count == 0
     }
     
@@ -153,7 +155,7 @@ class XHAudioManager: NSObject {
     func replay(isSpeakerOutput flag: Bool) {
         guard let player = player else { return }
         do {
-            try AVAudioSession.sharedInstance().setCategory(flag ? AVAudioSessionCategoryPlayback : AVAudioSessionCategoryPlayAndRecord)
+//            try AVAudioSession.sharedInstance().category
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             playDelegate?.audioManager(self, didOccur: .noDevice)
@@ -173,7 +175,6 @@ class XHAudioManager: NSObject {
         stopPlaying()
         guard recorder == nil else { return }
         do {
-            try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryRecord)
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             recordDelegate?.audioManager(self, didOccur: .noDevice)
@@ -188,7 +189,7 @@ class XHAudioManager: NSObject {
         recorder?.delegate = self
         recorder?.prepareToRecord()
         timer = Timer(timeInterval: 0.2, target: self, selector: #selector(onRecording), userInfo: nil, repeats: true)
-        RunLoop.current.add(timer!, forMode: .commonModes)
+        RunLoop.current.add(timer!, forMode: .common)
         recorder?.isMeteringEnabled = true
         recorder?.record()
     }
@@ -330,4 +331,3 @@ protocol XHAudioManagerPlayingDelegate: NSObjectProtocol {
     func audioManager(_ manager: XHAudioManager,didOccur error: XHAudioPlayError)
     
 }
-

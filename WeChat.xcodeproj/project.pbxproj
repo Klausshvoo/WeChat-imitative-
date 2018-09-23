@@ -46,10 +46,12 @@
 		0A9588282143F738002087D6 /* XHZoomableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9588272143F738002087D6 /* XHZoomableImageView.swift */; };
 		0A9B282A210C968700FA638A /* XHMessageCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9B2829210C968700FA638A /* XHMessageCell.swift */; };
 		0A9B282C210CB99000FA638A /* UITableView+Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9B282B210CB99000FA638A /* UITableView+Update.swift */; };
+		0A9C1C4621565DB4000E5316 /* XHDrawboard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9C1C4521565DB4000E5316 /* XHDrawboard.swift */; };
 		0AADEB9020F6FB4F00E96757 /* XHAreaViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AADEB8F20F6FB4F00E96757 /* XHAreaViewController.swift */; };
 		0AADEB9220F73CBE00E96757 /* UIImage+Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */; };
 		0AC6E5CB21426BB000B967E6 /* XHImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */; };
 		0ADE55D72126507A0030FA7F /* XHLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ADE55D62126507A0030FA7F /* XHLabel.swift */; };
+		0AEB9F7221573FAD008A8158 /* XHZoomableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AEB9F7121573FAD008A8158 /* XHZoomableView.swift */; };
 		0AF0355B214609A100BE0255 /* XHImageEditController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF0355A214609A100BE0255 /* XHImageEditController.swift */; };
 		0AF0355D2146117400BE0255 /* XHNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF0355C2146117400BE0255 /* XHNavigationBar.swift */; };
 		B0ABBD603D24BCA437B462C7 /* Pods_WeChat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBA685CC0C732FD9D5AC8BB0 /* Pods_WeChat.framework */; };
@@ -98,10 +100,12 @@
 		0A9588272143F738002087D6 /* XHZoomableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHZoomableImageView.swift; sourceTree = "<group>"; };
 		0A9B2829210C968700FA638A /* XHMessageCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHMessageCell.swift; sourceTree = "<group>"; };
 		0A9B282B210CB99000FA638A /* UITableView+Update.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+Update.swift"; sourceTree = "<group>"; };
+		0A9C1C4521565DB4000E5316 /* XHDrawboard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHDrawboard.swift; sourceTree = "<group>"; };
 		0AADEB8F20F6FB4F00E96757 /* XHAreaViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHAreaViewController.swift; sourceTree = "<group>"; };
 		0AADEB9120F73CBE00E96757 /* UIImage+Color.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Color.swift"; sourceTree = "<group>"; };
 		0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHImagePickerController.swift; sourceTree = "<group>"; };
 		0ADE55D62126507A0030FA7F /* XHLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XHLabel.swift; sourceTree = "<group>"; };
+		0AEB9F7121573FAD008A8158 /* XHZoomableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHZoomableView.swift; sourceTree = "<group>"; };
 		0AF0355A214609A100BE0255 /* XHImageEditController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHImageEditController.swift; sourceTree = "<group>"; };
 		0AF0355C2146117400BE0255 /* XHNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XHNavigationBar.swift; sourceTree = "<group>"; };
 		53BCCA3007630655F005EA2E /* Pods-WeChat.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat.release.xcconfig"; path = "Pods/Target Support Files/Pods-WeChat/Pods-WeChat.release.xcconfig"; sourceTree = "<group>"; };
@@ -323,8 +327,10 @@
 			children = (
 				0AC6E5CA21426BB000B967E6 /* XHImagePickerController.swift */,
 				0A9588272143F738002087D6 /* XHZoomableImageView.swift */,
+				0AEB9F7121573FAD008A8158 /* XHZoomableView.swift */,
 				0AF0355A214609A100BE0255 /* XHImageEditController.swift */,
 				0AF0355C2146117400BE0255 /* XHNavigationBar.swift */,
+				0A9C1C4521565DB4000E5316 /* XHDrawboard.swift */,
 			);
 			path = XHImagePicker;
 			sourceTree = "<group>";
@@ -381,6 +387,7 @@
 				TargetAttributes = {
 					0A1405C920F2F515009A6874 = {
 						CreatedOnToolsVersion = 9.4.1;
+						LastSwiftMigration = 1000;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -496,6 +503,7 @@
 				0A296759210DE9F100F28069 /* UIResponder+UIMenuController.swift in Sources */,
 				0A0562AE20F452B800FA1531 /* XHLoginViewController.swift in Sources */,
 				0A1405E420F2FD27009A6874 /* XHTabBarController.swift in Sources */,
+				0A9C1C4621565DB4000E5316 /* XHDrawboard.swift in Sources */,
 				0A1405E920F30401009A6874 /* UIColor+Hex.swift in Sources */,
 				0A0328A620FF1E3300BE625F /* XHChatBar.swift in Sources */,
 				0A0611E620FDB89800F856F2 /* XHMessage.swift in Sources */,
@@ -504,6 +512,7 @@
 				0ADE55D72126507A0030FA7F /* XHLabel.swift in Sources */,
 				0A382C87210EE7EC00E748E5 /* XHFriendSelectController.swift in Sources */,
 				0A23647821084A7E00FF69F7 /* XHAudioManager.swift in Sources */,
+				0AEB9F7221573FAD008A8158 /* XHZoomableView.swift in Sources */,
 				0A382C85210EE65A00E748E5 /* XHMessageTranspondable.swift in Sources */,
 				0A0328A020FEC80700BE625F /* XHBadgeView.swift in Sources */,
 				0A04CC4220F5E0FC00C25145 /* XHConfig.swift in Sources */,
@@ -657,7 +666,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Personal.WeChat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -679,7 +688,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Personal.WeChat;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

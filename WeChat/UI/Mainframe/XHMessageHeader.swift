@@ -15,7 +15,7 @@ class XHMessageHeader: UITableViewHeaderFooterView {
     override init(reuseIdentifier: String?) {
         super.init(reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = UIColor.background
-        let imageView = UIImageView(image: #imageLiteral(resourceName: "translation_bg").resizableImage(withCapInsets: UIEdgeInsetsMake(4, 4, 4, 4), resizingMode: .stretch))
+        let imageView = UIImageView(image: #imageLiteral(resourceName: "translation_bg").resizableImage(withCapInsets: UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4), resizingMode: .stretch))
         contentView.addSubview(imageView)
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor).isActive = true

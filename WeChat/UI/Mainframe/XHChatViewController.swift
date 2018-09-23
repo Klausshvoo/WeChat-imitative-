@@ -59,7 +59,7 @@ class XHChatViewController: UIViewController {
         tableView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         tableView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
         tableView.estimatedRowHeight = 120
-        tableView.rowHeight = UITableViewAutomaticDimension
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.register(XHMessageHeader.self, forHeaderFooterViewReuseIdentifier: "header")
         tableView.sectionHeaderHeight = 40
         tableView.register(XHTextMessageCell.self, forType: .text)
@@ -95,7 +95,7 @@ extension XHChatViewController: XHKeyboardObserver {
     
     func keyboardWillShow(_ noti: Notification) {
         guard isTop else { return }
-        if let info = noti.userInfo,let frame = info[UIKeyboardFrameEndUserInfoKey] as? CGRect {
+        if let info = noti.userInfo,let frame = info[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
             var y = frame.height
             if #available(iOS 11.0, *) {
                 y -= view.safeAreaInsets.bottom

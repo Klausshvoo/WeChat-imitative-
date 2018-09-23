@@ -173,7 +173,7 @@ class XHChatBarExpressionKeyboard: XHChatBarKeyboard {
         bagsFlowLayout.minimumLineSpacing = 0
         bagsCollectionView = UICollectionView(frame: .zero, collectionViewLayout: bagsFlowLayout)
         addSubview(bagsCollectionView)
-        bringSubview(toFront: addButton)
+        bringSubviewToFront(addButton)
         bagsCollectionView.alwaysBounceHorizontal = true
         bagsCollectionView.translatesAutoresizingMaskIntoConstraints = false
         bagsCollectionView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
@@ -190,7 +190,7 @@ class XHChatBarExpressionKeyboard: XHChatBarKeyboard {
         selectedBag.isSelected = true
         pageControl.numberOfPages = selectedBag.numberOfSections
         pageControl.addTarget(self, action: #selector(didSelectPage(_:)), for: .valueChanged)
-        bringSubview(toFront: pageControl)
+        bringSubviewToFront(pageControl)
         addSubview(sendButton)
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         sendButton.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
@@ -661,7 +661,7 @@ extension UITextView: XHEmotionKeyboardAssociatedInputView {
     }
     
     var notificationName: Notification.Name {
-        return .UITextViewTextDidChange
+        return UITextView.textDidChangeNotification
     }
     
     func clearText() {
@@ -677,7 +677,7 @@ extension UITextField: XHEmotionKeyboardAssociatedInputView {
     }
     
     var notificationName: Notification.Name {
-        return .UITextFieldTextDidChange
+        return UITextField.textDidChangeNotification
     }
     
     func clearText() {

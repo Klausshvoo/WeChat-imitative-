@@ -12,7 +12,7 @@ class XHMessageCell: UITableViewCell {
     
     fileprivate let avatarView = UIImageView(image: #imageLiteral(resourceName: "DefaultHead"))
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.backgroundColor = UIColor.background
         selectionStyle = .none
@@ -150,7 +150,7 @@ class XHMessageBubbleCell: XHMessageCell,XHMessageBubbleiewDelegate {
     
     fileprivate let bubbleView = XHMessageBubbleiew(frame: .zero)
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(bubbleView)
         bubbleView.delegate = self
@@ -184,7 +184,7 @@ class XHTextMessageCell: XHMessageBubbleCell {
     
     private let contentLabel = XHLabel()
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         bubbleView.addSubview(contentLabel)
         contentLabel.lineSpacing = 3
@@ -232,7 +232,7 @@ class XHAudioMessageCell: XHMessageBubbleCell {
     
     private var bubbleViewWidthConstraint: NSLayoutConstraint!
     
-    override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         contentView.addSubview(audioImageView)
         audioImageView.translatesAutoresizingMaskIntoConstraints = false
@@ -286,7 +286,7 @@ class XHAudioMessageCell: XHMessageBubbleCell {
                 device.isProximityMonitoringEnabled = true
                 play(message.path, isSpeakerOutput: true)
                 // 每次点击都用扬声器播放，同时监测设备和耳朵之间的距离
-                NotificationCenter.default.addObserver(self, selector: #selector(handleDeviceProximityState), name: .UIDeviceProximityStateDidChange, object: nil)
+                NotificationCenter.default.addObserver(self, selector: #selector(handleDeviceProximityState), name: UIDevice.proximityStateDidChangeNotification, object: nil)
             } else {
                 play(message.path, isSpeakerOutput: false)
             }
@@ -323,7 +323,7 @@ class XHAudioMessageCell: XHMessageBubbleCell {
         let device = UIDevice.current
         guard device.isProximityMonitoringEnabled else { return }
         device.isProximityMonitoringEnabled = false
-        NotificationCenter.default.removeObserver(self, name: .UIDeviceProximityStateDidChange, object: nil)
+        NotificationCenter.default.removeObserver(self, name: UIDevice.proximityStateDidChangeNotification, object: nil)
     }
     
     deinit {

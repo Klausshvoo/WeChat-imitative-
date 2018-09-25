@@ -11,7 +11,7 @@
 import UIKit
 
 /// Subclass should not override touch methods.
-/// CurrentImage property can be used for K-V-C to observer one line drawing or undo/redo state.
+/// CurrentImage property can be used for K-V-C to observer one line drawing.
  class XHDrawboard: UIView {
     
     /// default is black(333333)
@@ -27,16 +27,16 @@ import UIKit
         return undoManager?.canRedo ?? false
     }
     
+    weak var delegate: XHDrawboardDelegate?
+    
     func undo() {
         guard let undoManager = self.undoManager,undoManager.canUndo else { return }
         undoManager.undo()
-        didChangeValue(for: \XHDrawboard.currentImage)
     }
     
     func redo() {
         guard let undoManager = self.undoManager,undoManager.canRedo else { return }
         undoManager.redo()
-        didChangeValue(for: \XHDrawboard.currentImage)
     }
     
     private func snapImage() -> UIImage? {
@@ -61,9 +61,7 @@ import UIKit
             }
         }
         didSet {
-            if let undoManager = self.undoManager,!undoManager.isRedoing && !undoManager.isUndoing {
-                didChangeValue(for: \XHDrawboard.currentImage)
-            }
+            didChangeValue(for: \XHDrawboard.currentImage)
         }
     }
     
@@ -98,6 +96,7 @@ import UIKit
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
+        delegate?.drawboardDidBeginDrawing?(self)
         undoManager?.beginUndoGrouping()
         let point = touch.location(in: self)
         path = XHBezierPath(lineColor: currentLineColor)
@@ -119,6 +118,7 @@ import UIKit
         drawLine(touch,isCompleted: true)
         currentImage = snapImage()
         undoManager?.endUndoGrouping()
+        delegate?.drawboardDidEndDrawing?(self)
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -126,6 +126,7 @@ import UIKit
         drawLine(touch,isCompleted: true)
         currentImage = snapImage()
         undoManager?.endUndoGrouping()
+        delegate?.drawboardDidEndDrawing?(self)
     }
     
     private func drawLine(_ touch: UITouch,isCompleted: Bool = false) {
@@ -184,5 +185,14 @@ import UIKit
         }
         
     }
+    
+}
+
+
+@objc protocol XHDrawboardDelegate: NSObjectProtocol {
+    
+    @objc optional func drawboardDidBeginDrawing(_ drawboard: XHDrawboard)
+    
+    @objc optional func drawboardDidEndDrawing(_ drawboard: XHDrawboard)
     
 }

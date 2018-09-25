@@ -25,7 +25,7 @@ class XHImageEditController: UIViewController {
         let drawboard = XHImageEditboard(content: originalImage)
         drawboard.sizeToFit()
         drawboard.isUserInteractionEnabled = false
-        drawboard.addObserver(self, forKeyPath: "currentImage", options: .new, context: nil)
+        drawboard.delegate = self
         let temp = XHZoomableView(frame: .zero, zoomView: drawboard)
         temp.doubleTapGestureRecognizer.isEnabled = false
         temp.delegate = self
@@ -48,6 +48,7 @@ class XHImageEditController: UIViewController {
         super.viewDidLoad()
         setNeedsStatusBarAppearanceUpdate()
         view.addSubview(zoomableView)
+        zoomableView.backgroundColor = UIColor.black
         zoomableView.translatesAutoresizingMaskIntoConstraints = false
         zoomableView.maximumZoomScale = 3
         imageLeftConstraint = zoomableView.leftAnchor.constraint(equalTo: view.leftAnchor)
@@ -95,14 +96,6 @@ class XHImageEditController: UIViewController {
         editBar.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         editBar.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        if let drawboard = object as? XHDrawboard {
-            if let key = keyPath,key == "currentImage" {
-                editBar.setCanUndo(drawboard.canUndo, for: .pen)
-            }
-        }
-    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -116,6 +109,18 @@ extension XHImageEditController: XHZoomableViewDelegate {
         drawboard.currentLineWidth /= scale
     }
     
+}
+
+extension XHImageEditController: XHDrawboardDelegate {
+    
+    func drawboardDidBeginDrawing(_ drawboard: XHDrawboard) {
+        view.bringSubviewToFront(zoomableView)
+    }
+    
+    func drawboardDidEndDrawing(_ drawboard: XHDrawboard) {
+        view.sendSubviewToBack(zoomableView)
+        editBar.setCanUndo(drawboard.canUndo, for: .pen)
+    }
 }
 
 extension XHImageEditController: XHImageEditBarDelegate {
@@ -145,12 +150,20 @@ extension XHImageEditController: XHImageEditBarDelegate {
     }
     
     fileprivate func editBar(_ editBar: XHImageEditBar, shouldUndoFor editType: XHImageEditType) {
+        var canUndo: Bool
         switch editType {
         case .pen:
             drawboard.undo()
+            canUndo = drawboard.canUndo
         default:
+            canUndo = false
             break
         }
+        editBar.setCanUndo(canUndo, for: editType)
+    }
+    
+    fileprivate func editBar(_ editBar: XHImageEditBar, shouldDrawMosaicWith type: XHImageEditMosaicType) {
+        
     }
     
 }
@@ -281,6 +294,11 @@ fileprivate class XHImageEditBar: UIView {
         return temp
     }()
     
+    private lazy var mosaicBar: XHImageEditMosaicBar = {
+        let temp = XHImageEditMosaicBar()
+        return temp
+    }()
+    
     private func didSelectEditType(_ type: XHImageEditType) {
         var info: Any?
         switch type {
@@ -289,10 +307,17 @@ fileprivate class XHImageEditBar: UIView {
             penBar.translatesAutoresizingMaskIntoConstraints = false
             penBar.leftAnchor.constraint(equalTo: subBarContainer.leftAnchor).isActive = true
             penBar.bottomAnchor.constraint(equalTo: subBarContainer.bottomAnchor).isActive = true
-            penBar.rightAnchor.constraint(equalTo: subBarContainer.rightAnchor).isActive = true
             subBarContainerConstraint.isActive = false
             penBar.topAnchor.constraint(equalTo: subBarContainer.topAnchor).isActive = true
             info = penBar.currentColor
+        case .mosaic:
+            subBarContainer.addSubview(mosaicBar)
+            mosaicBar.translatesAutoresizingMaskIntoConstraints = false
+            mosaicBar.leftAnchor.constraint(equalTo: subBarContainer.leftAnchor).isActive = true
+            mosaicBar.bottomAnchor.constraint(equalTo: subBarContainer.bottomAnchor).isActive = true
+            subBarContainerConstraint.isActive = false
+            mosaicBar.topAnchor.constraint(equalTo: subBarContainer.topAnchor).isActive = true
+            info = mosaicBar.type
         default:
             break
         }
@@ -304,10 +329,22 @@ fileprivate class XHImageEditBar: UIView {
         case .pen:
             penBar.removeFromSuperview()
             subBarContainerConstraint.isActive = true
+        case .mosaic:
+            mosaicBar.removeFromSuperview()
+            subBarContainerConstraint.isActive = true
         default:
             break
         }
         delegate?.editBar(self, didDeselect: type)
+    }
+    
+    func setCanUndo(_ flag: Bool,for editType: XHImageEditType) {
+        switch editType {
+        case .pen:
+            penBar.canUndo = flag
+        default:
+            break
+        }
     }
     
 }
@@ -322,13 +359,16 @@ extension XHImageEditBar: XHImageEditPenBarDelegate {
         delegate?.editBar(self, shouldUndoFor: .pen)
     }
     
-    func setCanUndo(_ flag: Bool,for editType: XHImageEditType) {
-        switch editType {
-        case .pen:
-            penBar.canUndo = flag
-        default:
-            break
-        }
+}
+
+extension XHImageEditBar: XHImageEditMosaicBarDelegate {
+    
+    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar, didSelect type: XHImageEditMosaicType) {
+        delegate?.editBar(self, shouldDrawMosaicWith: type)
+    }
+    
+    func mosaicBarShouldUndo(_ mosaicBar: XHImageEditMosaicBar) {
+        delegate?.editBar(self, shouldUndoFor: .mosaic)
     }
     
 }
@@ -343,13 +383,149 @@ fileprivate protocol XHImageEditBarDelegate: NSObjectProtocol {
     
     func editBar(_ editBar: XHImageEditBar,shouldUndoFor editType: XHImageEditType)
     
+    func editBar(_ editBar: XHImageEditBar,shouldDrawMosaicWith type: XHImageEditMosaicType)
+    
 }
 
-fileprivate enum XHImageEditPenColor: Int {
+fileprivate protocol XHItemEnum: CaseIterable {
+    
+    var rawValue: Int { get }
+    
+    var iconName: String { get }
+    
+    var width: CGFloat? { get }
+    
+    var hasSuffix: Bool { get }
+    
+}
+
+extension XHItemEnum {
+    
+    func buttonWithTarget(_ target: Any,action: Selector) -> UIButton {
+        let button = UIButton(type: .custom)
+        var normalName = iconName
+        var selectName = iconName
+        if hasSuffix {
+            normalName += "unsel"
+            selectName += "sel"
+        } else {
+            selectName += "_HL"
+        }
+        button.setImage(UIImage(named: normalName), for: .normal)
+        button.setImage(UIImage(named: selectName), for: .selected)
+        button.setImage(UIImage(named: selectName), for: .highlighted)
+        button.sizeToFit()
+        if let width = width {
+            var bounds = button.bounds
+            bounds.size.width = width
+            button.bounds = bounds
+        }
+        button.tag = rawValue
+        button.addTarget(target, action: action, for: .touchUpInside)
+        return button
+    }
+    
+    static func allBarButtonItems(target: Any,action: Selector,hasSuffix: Bool) -> [UIBarButtonItem] {
+        let fixItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        var allItems = [UIBarButtonItem]()
+        for type in allCases {
+            let button = type.buttonWithTarget(target, action: action)
+            button.tag = type.rawValue
+            let item = UIBarButtonItem(customView: button)
+            allItems.append(contentsOf: [item,fixItem])
+        }
+        return allItems
+    }
+    
+}
+
+fileprivate class XHImageEditTypeBar<T: XHItemEnum>: XHTranslucentToolBar {
+    
+    override var intrinsicContentSize: CGSize {
+        return CGSize(width: UIScreen.main.bounds.width, height: 60)
+    }
+    
+    fileprivate var selectItem: UIButton?
+    
+    var revokeButtonWidth: CGFloat? {
+        return nil
+    }
+    
+    private lazy var revokeButton: UIButton = {
+        let temp = UIButton(type: .custom)
+        temp.isEnabled = false
+        temp.setImage(#imageLiteral(resourceName: "EditImageRevokeDisable"), for: .disabled)
+        temp.setImage(#imageLiteral(resourceName: "EditImageRevokeEnable"), for: .normal)
+        temp.sizeToFit()
+        temp.addTarget(self, action: #selector(shouldRevokeLastDraw(_:)), for: .touchUpInside)
+        if let width = revokeButtonWidth {
+            var bounds = temp.bounds
+            bounds.size.width = width
+            temp.bounds = bounds
+        }
+        return temp
+    }()
+    
+    var canUndo: Bool {
+        set {
+            revokeButton.isEnabled = newValue
+        }
+        get {
+            return revokeButton.isEnabled
+        }
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        configureItems()
+        let line = UIView()
+        addSubview(line)
+        line.translatesAutoresizingMaskIntoConstraints = false
+        line.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        line.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
+        line.heightAnchor.constraint(equalToConstant: 0.3).isActive = true
+        line.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
+        line.backgroundColor = UIColor(hex: 0x393939)
+        if let button = items?.first?.customView as? UIButton {
+            didSelectType(button)
+        }
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func configureItems() {
+        var allItems = T.allBarButtonItems(target: self, action: #selector(didSelectType(_:)), hasSuffix: true)
+        let revokeItem = UIBarButtonItem(customView: revokeButton)
+        allItems.append(revokeItem)
+        self.items = allItems
+    }
+    
+    @objc func didSelectType(_ sender: UIButton) {
+        guard !sender.isSelected else { return }
+        sender.isSelected = !sender.isSelected
+        selectItem?.isSelected = false
+        selectItem = sender
+    }
+    
+    @objc func shouldRevokeLastDraw(_ sender: UIButton) {}
+    
+}
+
+fileprivate enum XHImageEditPenColor: Int,XHItemEnum {
     case white,black,red,yellow,green,blue,purple,magenta
     
     var iconName: String {
         return "EditImageColorDot_\(rawValue)_"
+    }
+    
+    var hasSuffix: Bool {
+        return true
+    }
+    
+    var width: CGFloat? {
+        return nil
     }
     
     var color: UIColor {
@@ -374,26 +550,9 @@ fileprivate enum XHImageEditPenColor: Int {
     }
 }
 
-fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
-    
-    override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIScreen.main.bounds.width, height: 60)
-    }
-    
-    private var selectItem: UIButton?
-    
-    private let revokeButton = UIButton(type: .custom)
+fileprivate class XHImageEditPenBar: XHImageEditTypeBar<XHImageEditPenColor> {
     
     weak var uiDelegate: XHImageEditPenBarDelegate?
-    
-    var canUndo: Bool {
-        set {
-            revokeButton.isEnabled = newValue
-        }
-        get {
-            return revokeButton.isEnabled
-        }
-    }
     
     var currentColor: UIColor? {
         if let selectItem = self.selectItem {
@@ -403,66 +562,13 @@ fileprivate class XHImageEditPenBar: XHTranslucentToolBar {
         return nil
     }
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        configureItems()
-        canUndo = false
-        let line = UIView()
-        addSubview(line)
-        line.translatesAutoresizingMaskIntoConstraints = false
-        line.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
-        line.rightAnchor.constraint(equalTo: rightAnchor).isActive = true
-        line.heightAnchor.constraint(equalToConstant: 0.3).isActive = true
-        line.bottomAnchor.constraint(equalTo: bottomAnchor).isActive = true
-        line.backgroundColor = UIColor(hex: 0x393939)
-        if let button = items?.first?.customView as? UIButton {
-            didSelectColor(button)
-        }
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configureItems() {
-        let fixItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let types: [XHImageEditPenColor] = [.white,.black,.red,.yellow,.green,.blue,.purple,.magenta]
-        let items = types.map { (type) -> UIBarButtonItem in
-            let button = buttonWithImageName(type.iconName)
-            button.tag = type.rawValue
-            return UIBarButtonItem(customView: button)
-        }
-        var allItems = [UIBarButtonItem]()
-        for item in items {
-            allItems.append(contentsOf: [item,fixItem])
-        }
-        revokeButton.setImage(#imageLiteral(resourceName: "EditImageRevokeDisable"), for: .disabled)
-        revokeButton.setImage(#imageLiteral(resourceName: "EditImageRevokeEnable"), for: .normal)
-        revokeButton.addTarget(self, action: #selector(shouldRevokeLastDraw(_:)), for: .touchUpInside)
-        revokeButton.sizeToFit()
-        let revokeItem = UIBarButtonItem(customView: revokeButton)
-        allItems.append(revokeItem)
-        self.items = allItems
-    }
-    
-    private func buttonWithImageName(_ imageName: String) -> UIButton {
-        let button = UIButton(type: .custom)
-        button.setImage(UIImage(named: imageName + "unsel"), for: .normal)
-        button.setImage(UIImage(named: imageName + "sel"), for: .selected)
-        button.sizeToFit()
-        button.addTarget(self, action: #selector(didSelectColor(_:)), for: .touchUpInside)
-        return button
-    }
-    
-    @objc private func didSelectColor(_ sender: UIButton) {
-        guard !sender.isSelected else { return }
-        sender.isSelected = !sender.isSelected
-        selectItem?.isSelected = false
-        selectItem = sender
+    override func didSelectType(_ sender: UIButton) {
+        super.didSelectType(sender)
+        guard sender.isSelected else { return }
         uiDelegate?.penBar(self, didSelect: XHImageEditPenColor(rawValue: sender.tag)!)
     }
     
-    @objc private func shouldRevokeLastDraw(_ sender: UIButton) {
+    override func shouldRevokeLastDraw(_ sender: UIButton) {
         uiDelegate?.penBarShouldUndo(self)
     }
 }
@@ -474,3 +580,56 @@ fileprivate protocol XHImageEditPenBarDelegate: NSObjectProtocol {
     func penBarShouldUndo(_ penBar: XHImageEditPenBar)
     
 }
+
+fileprivate enum XHImageEditMosaicType: Int,XHItemEnum {
+    case traditional,brush
+    
+    var iconName: String {
+        switch self {
+        case .traditional:
+            return "EditImageTraditionalMosaicBtn"
+        case .brush:
+            return "EditImageBrushMosaicBtn"
+        }
+    }
+    
+    var width: CGFloat? {
+        return UIScreen.main.bounds.width * 0.28
+    }
+    
+    var hasSuffix: Bool {
+        return false
+    }
+    
+}
+
+fileprivate class XHImageEditMosaicBar: XHImageEditTypeBar<XHImageEditMosaicType> {
+    
+    weak var uiDelegate: XHImageEditMosaicBarDelegate?
+    
+    var type: XHImageEditMosaicType = .traditional
+    
+    override var revokeButtonWidth: CGFloat? {
+        return UIScreen.main.bounds.width * 0.2
+    }
+    
+    override func didSelectType(_ sender: UIButton) {
+        super.didSelectType(sender)
+        guard sender.isSelected else { return }
+        uiDelegate?.mosaicBar(self, didSelect: XHImageEditMosaicType(rawValue: sender.tag)!)
+    }
+    
+    override func shouldRevokeLastDraw(_ sender: UIButton) {
+        uiDelegate?.mosaicBarShouldUndo(self)
+    }
+    
+}
+
+fileprivate protocol XHImageEditMosaicBarDelegate: NSObjectProtocol {
+    
+    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar,didSelect type: XHImageEditMosaicType)
+    
+    func mosaicBarShouldUndo(_ mosaicBar: XHImageEditMosaicBar)
+    
+}
+

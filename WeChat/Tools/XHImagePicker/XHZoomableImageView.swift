@@ -37,7 +37,7 @@ class XHZoomableImageView: XHZoomableView {
         
         override var intrinsicContentSize: CGSize {
             let size = super.intrinsicContentSize
-            let width = min(size.width, UIScreen.main.bounds.width - 20)
+            let width = UIScreen.main.bounds.width - 20
             let scale = size.width / width
             let height = size.height / scale
             return CGSize(width: width, height: height)

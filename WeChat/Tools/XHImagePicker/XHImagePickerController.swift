@@ -201,7 +201,7 @@ fileprivate class XHAlbumCell: UITableViewCell {
             if let asset = album?.assets.last {
                 asset.fetchCoverImage { [weak self](weakAsset) in
                     guard asset == weakAsset else { return }
-                    self?.coverView.image = weakAsset.coverImage
+                    self?.coverView.image = weakAsset.thumbImage
                 }
             }
         }
@@ -535,6 +535,8 @@ fileprivate class XHPhotoCell: UICollectionViewCell {
         imageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor).isActive = true
         imageView.topAnchor.constraint(equalTo: contentView.topAnchor).isActive = true
         imageView.leftAnchor.constraint(equalTo: contentView.leftAnchor).isActive = true
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.masksToBounds = true
         contentView.addSubview(videoIconView)
         videoIconView.translatesAutoresizingMaskIntoConstraints = false
         videoIconView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 10).isActive = true
@@ -551,7 +553,7 @@ fileprivate class XHPhotoCell: UICollectionViewCell {
         didSet {
             asset.fetchCoverImage{ [weak self](asset) in
                 if self?.asset == asset {
-                    self?.imageView.image = asset.coverImage
+                    self?.imageView.image = asset.thumbImage
                 }
             }
             if asset.mediaType != .image {
@@ -910,11 +912,7 @@ class XHPhotoAsset: NSObject {
     
     fileprivate var selectable: Bool = true
     
-    private(set) var coverImage: UIImage?
-    
     private(set) var thumbImage: UIImage?
-    
-    private var thumbRequestID: PHImageRequestID?
     
     private(set) var image: UIImage?
     
@@ -925,14 +923,15 @@ class XHPhotoAsset: NSObject {
     private var playerRequestID: PHImageRequestID?
     
     func fetchCoverImage(completion: @escaping (XHPhotoAsset)->Void) {
-        if coverImage != nil {
+        if thumbImage != nil {
             completion(self)
             return
         }
         let width = (UIScreen.main.bounds.width - 5 * 5) / 4
-        fetchImage(in: CGSize(width: width, height: width)) { [weak self](image) in
+        let height = CGFloat(asset.pixelHeight) / (CGFloat(asset.pixelWidth) / width)
+        fetchImage(in: CGSize(width: width, height: height)) { [weak self](image) in
             if let weakSelf = self {
-                weakSelf.coverImage = image
+                weakSelf.thumbImage = image
                 completion(weakSelf)
             }
         }
@@ -970,32 +969,6 @@ class XHPhotoAsset: NSObject {
         originRequestID = nil
     }
     
-    func requestThumbImage(completion:@escaping (UIImage?) -> Void) {
-        if let image = self.thumbImage {
-            completion(image)
-            return
-        }
-        let scale = UIScreen.main.scale
-        let width = min(80 * scale,CGFloat(asset.pixelWidth))
-        var height = CGFloat(asset.pixelHeight) / (CGFloat(asset.pixelWidth) / width)
-        height = min(height, 200 * scale)
-        let size = CGSize(width: width, height: height)
-        let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
-        options.resizeMode = .exact
-        thumbRequestID = PHImageManager.default().requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: options) { [weak self](image, _) in
-            self?.thumbImage = image
-            completion(image)
-        }
-    }
-    
-    func cancelThumbRequest() {
-        if let requestID = thumbRequestID {
-            PHImageManager.default().cancelImageRequest(requestID)
-        }
-        thumbRequestID = nil
-    }
-    
     func requestPlayerItem(completion:@escaping (AVPlayerItem?) -> Void) {
         guard asset.mediaType == .video else { return }
         if let item = self.playerItem {
@@ -1018,7 +991,6 @@ class XHPhotoAsset: NSObject {
     }
     
     deinit {
-        cancelThumbRequest()
         cancelOriginRequest()
         cancelVideoRequest()
     }
@@ -1143,24 +1115,15 @@ fileprivate class XHPhotoBrowseController: UIViewController {
     private func configureNavigationBar() {
         let leftBarButtonItem = UIBarButtonItem(image: #imageLiteral(resourceName: "barbuttonicon_back"), style: .plain, target: self, action: #selector(finishBrowsing))
         let spaceItem = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let customView = UIView()
+        let customView = UIView(frame: CGRect(origin: .zero, size: CGSize(width: 33, height: 44)))
         let button = UIButton(type: .custom)
         button.setImage(#imageLiteral(resourceName: "sharecard_done"), for: .normal)
         button.contentEdgeInsets = UIEdgeInsets(top: 3, left: 3, bottom: 3, right: 3)
         customView.addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.centerXAnchor.constraint(equalTo: customView.centerXAnchor).isActive = true
-        button.centerYAnchor.constraint(equalTo: customView.centerYAnchor).isActive = true
-        button.widthAnchor.constraint(equalToConstant: 33).isActive = true
-        button.heightAnchor.constraint(equalTo: button.widthAnchor).isActive = true
+        button.frame = CGRect(x: 0, y: 5.5, width: 33, height: 33)
         button.addTarget(self, action: #selector(selectAsset), for: .touchUpInside)
-        customView.bounds = CGRect(origin: .zero, size: CGSize(width: 33, height: 44))
         customView.addSubview(selectNavigationBarLabel)
-        selectNavigationBarLabel.translatesAutoresizingMaskIntoConstraints = false
-        selectNavigationBarLabel.centerXAnchor.constraint(equalTo: customView.centerXAnchor).isActive = true
-        selectNavigationBarLabel.centerYAnchor.constraint(equalTo: customView.centerYAnchor).isActive = true
-        selectNavigationBarLabel.widthAnchor.constraint(equalToConstant: 30).isActive = true
-        selectNavigationBarLabel.heightAnchor.constraint(equalTo: selectNavigationBarLabel.widthAnchor).isActive = true
+        selectNavigationBarLabel.frame = CGRect(x: 3, y: 7, width: 30, height: 30)
         selectNavigationBarLabel.layer.cornerRadius = 15
         selectNavigationBarLabel.backgroundColor = UIColor.main
         selectNavigationBarLabel.isHidden = true
@@ -1231,8 +1194,7 @@ fileprivate class XHPhotoBrowseController: UIViewController {
     /// 添加相关手势，全局单击手势和拖拽手势
     private func addGestureRecognizers() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
-        view.addGestureRecognizer(tap)
-        tap.delegate = self
+        collectionView.addGestureRecognizer(tap)
     }
     
     private var isFront: Bool = false {
@@ -1249,15 +1211,6 @@ fileprivate class XHPhotoBrowseController: UIViewController {
     private var isPlaying: Bool = false
     
     @objc private func handleTap(_ tap: UITapGestureRecognizer) {
-        if !isFront {
-            let location = tap.location(in: view)
-            if navigationBar.frame.contains(location) || selectedBar.frame.contains(location) {
-                return
-            }
-            if !indexBar.isHidden,indexBar.frame.contains(location) {
-                return;
-            }
-        }
         let currentAsset = assets[currentIndex]
         if currentAsset.mediaType == .video {
             isPlaying = !isPlaying
@@ -1386,14 +1339,6 @@ extension XHPhotoBrowseController: XHAssetIndexBarDelegate {
     
 }
 
-extension XHPhotoBrowseController: UIGestureRecognizerDelegate {
-    
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRequireFailureOf otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        return true
-    }
-    
-}
-
 fileprivate protocol XHPhotoBrowseControllerDelegate: NSObjectProtocol {
     
     func browseControllerShouldPopBackWithChanges(_ controller: XHPhotoBrowseController)
@@ -1435,7 +1380,7 @@ fileprivate class XHPhotoBrowseCell: UICollectionViewCell {
     
     var asset: XHPhotoAsset! {
         didSet {
-            imageView.image = asset.coverImage
+            imageView.image = asset.thumbImage
             asset.requestOriginalImage { [weak self](image) in
                 self?.imageView.image = image
             }
@@ -1556,6 +1501,16 @@ extension XHAssetIndexBar: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         delegate?.indexBar(self, didSelectItemAt: indexPath.item)
+        if let cell = collectionView.cellForItem(at: indexPath) {
+            var point = collectionView.contentOffset
+            if cell.frame.maxX > collectionView.contentOffset.x + collectionView.bounds.width {
+                point.x = cell.frame.maxX - collectionView.bounds.width
+            } else if cell.frame.minX < collectionView.contentOffset.x {
+                point.x = cell.frame.minX
+            }
+            guard point != collectionView.contentOffset else { return }
+            collectionView.setContentOffset(point, animated: true)
+        }
     }
     
 }
@@ -1606,7 +1561,7 @@ fileprivate class XHAssetIndexBarCell: UICollectionViewCell {
     }
     
     func setAsset(_ asset: XHPhotoAsset?,isCurrent: Bool) {
-        imageView.image = asset?.coverImage
+        imageView.image = asset?.thumbImage
         guard isCurrent else { return }
         imageView.layer.borderColor = UIColor.main.cgColor
     }

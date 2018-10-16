@@ -11,96 +11,61 @@
 import UIKit
 
 /// Subclass should not override touch methods.
-/// CurrentImage property can be used for K-V-C to observer one line drawing.
  class XHDrawboard: UIView {
-    
-    /// default is black(333333)
-    var currentLineColor: UIColor = UIColor.black
-    
-    var currentLineWidth: CGFloat = 5
-    
-    var canUndo: Bool {
-        return undoManager?.canUndo ?? false
-    }
-    
-    var canRedo: Bool {
-        return undoManager?.canRedo ?? false
-    }
     
     weak var delegate: XHDrawboardDelegate?
     
-    func undo() {
-        guard let undoManager = self.undoManager,undoManager.canUndo else { return }
-        undoManager.undo()
-    }
-    
-    func redo() {
-        guard let undoManager = self.undoManager,undoManager.canRedo else { return }
-        undoManager.redo()
-    }
-    
-    private func snapImage() -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
-        let context = UIGraphicsGetCurrentContext()!
-        layer.render(in: context)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return image
-    }
-    
-    /// readonly,Key-Value-Coding is available
-    @objc private(set) var currentImage: UIImage? {
+    private var currentImage: UIImage? {
         willSet {
-            willChangeValue(for: \XHDrawboard.currentImage)
-            if let undoManager = self.undoManager {
-                if !undoManager.isUndoing {
-                    undoManager.registerUndo(withTarget: self, selector: #selector(undoDraw(_:)), object: currentImage)
-                } else {
-                    (undoManager.prepare(withInvocationTarget: self) as AnyObject).undoDraw(currentImage)
-                }
+            if drawUndoManager.isUndoing {
+                path = nil
+            } else {
+                drawUndoManager.registerUndo(withTarget: self, selector: #selector(undoDraw(_:)), object: currentImage)
             }
         }
-        didSet {
-            didChangeValue(for: \XHDrawboard.currentImage)
-        }
     }
     
+    /// default is black(333333),only effect lineBrush.
+    var lineColor: UIColor = UIColor.red
     
+    private var lineWidth: CGFloat {
+        return 5 / scale
+    }
+    
+    var scale: CGFloat = 1
+    
+    private lazy var drawUndoManager = UndoManager()
+    
+    var canUndo: Bool {
+        return drawUndoManager.canUndo
+    }
+    
+    func undo() {
+        drawUndoManager.undo()
+    }
     
     @objc private func undoDraw(_ image: UIImage?) {
         currentImage = image
         setNeedsDisplay()
     }
     
-    init(content: UIImage?) {
-        super.init(frame: .zero)
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         backgroundColor = UIColor.clear
-        if let content = content {
-            layer.contents = content.cgImage
-            currentImage = content
-        }
     }
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override var intrinsicContentSize: CGSize {
-        if let image = currentImage {
-            return image.size
-        }
-        return CGSize(width: UIView.noIntrinsicMetric, height: UIView.noIntrinsicMetric)
-    }
-    
     private var path: XHBezierPath!
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
-        delegate?.drawboardDidBeginDrawing?(self)
-        undoManager?.beginUndoGrouping()
+        delegate?.drawboardDidBeginDrawing(self)
         let point = touch.location(in: self)
-        path = XHBezierPath(lineColor: currentLineColor)
-        path.lineWidth = currentLineWidth
+        path = XHBezierPath(lineColor: lineColor)
+        path.lineWidth = lineWidth
         path.move(to: point)
     }
     
@@ -115,21 +80,19 @@ import UIKit
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
-        drawLine(touch,isCompleted: true)
+        drawLine(touch)
         currentImage = snapImage()
-        undoManager?.endUndoGrouping()
-        delegate?.drawboardDidEndDrawing?(self)
+        delegate?.drawboardDidEndDrawing(self)
     }
     
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
-        drawLine(touch,isCompleted: true)
+        drawLine(touch)
         currentImage = snapImage()
-        undoManager?.endUndoGrouping()
-        delegate?.drawboardDidEndDrawing?(self)
+        delegate?.drawboardDidEndDrawing(self)
     }
     
-    private func drawLine(_ touch: UITouch,isCompleted: Bool = false) {
+    private func drawLine(_ touch: UITouch) {
         let point = touch.location(in: self)
         let previousPoint = touch.previousLocation(in: self)
         let previousEnd = path.currentPoint
@@ -139,11 +102,10 @@ import UIKit
         let minY = min(point.y, min(previousPoint.y, previousEnd.y))
         let maxX = max(point.x, min(previousPoint.x, previousEnd.x))
         let maxY = max(point.y, min(previousPoint.y, previousEnd.y))
-        let x = minX - currentLineWidth / 2 - 1
-        let y = minY - currentLineWidth / 2 - 1
-        let width = maxX - minX + currentLineWidth
-        let height = maxY - minY + currentLineWidth
-        path.isCompleted = isCompleted
+        let x = minX - lineWidth / 2 - 1
+        let y = minY - lineWidth / 2 - 1
+        let width = maxX - minX + lineWidth
+        let height = maxY - minY + lineWidth
         setNeedsDisplay(CGRect(x: x, y: y, width: width, height: height))
     }
     
@@ -156,21 +118,12 @@ import UIKit
             let context = UIGraphicsGetCurrentContext()
             context?.setBlendMode(.normal)
             path.stroke()
-            if path.isCompleted {
-                self.path = nil
-            }
         }
-    }
-    
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
-        return intrinsicContentSize
     }
     
     fileprivate class XHBezierPath: UIBezierPath {
         
         var lineColor: UIColor
-        
-        var isCompleted: Bool = false
         
         init(lineColor: UIColor) {
             self.lineColor = lineColor
@@ -189,10 +142,23 @@ import UIKit
 }
 
 
-@objc protocol XHDrawboardDelegate: NSObjectProtocol {
+protocol XHDrawboardDelegate: NSObjectProtocol {
     
-    @objc optional func drawboardDidBeginDrawing(_ drawboard: XHDrawboard)
+    func drawboardDidBeginDrawing(_ drawboard: XHDrawboard)
     
-    @objc optional func drawboardDidEndDrawing(_ drawboard: XHDrawboard)
+    func drawboardDidEndDrawing(_ drawboard: XHDrawboard)
+    
+}
+
+extension UIView {
+    
+    func snapImage() -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(bounds.size, false, UIScreen.main.scale)
+        let context = UIGraphicsGetCurrentContext()!
+        layer.render(in: context)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image
+    }
     
 }

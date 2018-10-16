@@ -22,11 +22,11 @@ class XHImageEditController: UIViewController {
     }
     
     private lazy var zoomableView: XHZoomableView = {
-        let drawboard = XHImageEditboard(content: originalImage)
-        drawboard.sizeToFit()
+        let drawboard = XHImageEditboard(image: originalImage)
         drawboard.isUserInteractionEnabled = false
         drawboard.delegate = self
         let temp = XHZoomableView(frame: .zero, zoomView: drawboard)
+        temp.setZoomSize(drawboard.intrinsicContentSize)
         temp.doubleTapGestureRecognizer.isEnabled = false
         temp.delegate = self
         return temp
@@ -106,21 +106,22 @@ class XHImageEditController: UIViewController {
 extension XHImageEditController: XHZoomableViewDelegate {
     
     func zoomableView(_ zoomableView: XHZoomableView, didEndZoomingAtScale scale: CGFloat) {
-        drawboard.currentLineWidth /= scale
+        drawboard.scale = scale
     }
     
 }
 
-extension XHImageEditController: XHDrawboardDelegate {
+extension XHImageEditController: XHImageEditboardDelegate {
     
-    func drawboardDidBeginDrawing(_ drawboard: XHDrawboard) {
+    fileprivate func eidtboard(_ eidtboard: XHImageEditboard, didBeginDrawingWithBrushType type: XHImageEditboardBrushType) {
         view.bringSubviewToFront(zoomableView)
     }
     
-    func drawboardDidEndDrawing(_ drawboard: XHDrawboard) {
+    fileprivate func eidtboard(_ eidtboard: XHImageEditboard, didEndDrawingWithBrushType type: XHImageEditboardBrushType) {
         view.sendSubviewToBack(zoomableView)
-        editBar.setCanUndo(drawboard.canUndo, for: .pen)
+        editBar.setCanUndo(eidtboard.canUndo(for: type), for: editBar.editType!)
     }
+
 }
 
 extension XHImageEditController: XHImageEditBarDelegate {
@@ -128,33 +129,39 @@ extension XHImageEditController: XHImageEditBarDelegate {
     fileprivate func editBar(_ editBar: XHImageEditBar, didSelect editType: XHImageEditType,info: Any?) {
         switch editType {
         case .pen:
+            drawboard.brushType = .line
             drawboard.isUserInteractionEnabled = true
             zoomableView.isScrollEnabled = false
             if let color = info as? UIColor {
-                drawboard.currentLineColor = color
+                drawboard.lineColor = color
             }
+        case .mosaic:
+            drawboard.brushType = .mosaic
+            drawboard.isUserInteractionEnabled = true
+            zoomableView.isScrollEnabled = false
         default:
             break
         }
     }
     
     fileprivate func editBar(_ editBar: XHImageEditBar, didDeselect editType: XHImageEditType) {
-        if editType == .pen {
-            drawboard.isUserInteractionEnabled = false
-            zoomableView.isScrollEnabled = true
-        }
+        drawboard.isUserInteractionEnabled = false
+        zoomableView.isScrollEnabled = true
     }
     
     fileprivate func editBar(_ editBar: XHImageEditBar, shouldDrawLineWith color: UIColor) {
-        drawboard.currentLineColor = color
+        drawboard.lineColor = color
     }
     
     fileprivate func editBar(_ editBar: XHImageEditBar, shouldUndoFor editType: XHImageEditType) {
         var canUndo: Bool
         switch editType {
         case .pen:
-            drawboard.undo()
-            canUndo = drawboard.canUndo
+            drawboard.undo(for: .line)
+            canUndo = drawboard.canUndo(for: .line)
+        case .mosaic:
+            drawboard.undo(for: .mosaic)
+            canUndo = drawboard.canUndo(for: .mosaic)
         default:
             canUndo = false
             break
@@ -188,15 +195,127 @@ fileprivate enum XHImageEditType: Int {
     
 }
 
-fileprivate class XHImageEditboard: XHDrawboard {
+enum XHImageEditboardBrushType {
+    case line,mosaic
+}
+
+fileprivate class XHImageEditboard: UIView {
+    
+    weak var delegate: XHImageEditboardDelegate?
+    
+    var brushType: XHImageEditboardBrushType = .line {
+        didSet {
+            drawboard.isUserInteractionEnabled = brushType == .line
+        }
+    }
+    
+    var scale: CGFloat = 1 {
+        didSet {
+            drawboard.scale = scale
+            mosaicView.scale = scale
+        }
+    }
+    
+    var lineColor: UIColor {
+        set {
+            drawboard.lineColor = newValue
+        }
+        get {
+            return drawboard.lineColor
+        }
+    }
+    
+    private var mosaicView: XHMosaicView
+    
+    private let drawboard = XHDrawboard()
+    
+    init(image: UIImage) {
+        mosaicView = XHMosaicView(content: image)
+        super.init(frame: .zero)
+        addSubview(mosaicView)
+        mosaicView.translatesAutoresizingMaskIntoConstraints = false
+        mosaicView.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        mosaicView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        mosaicView.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        mosaicView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        mosaicView.delegate = self
+        addSubview(drawboard)
+        drawboard.translatesAutoresizingMaskIntoConstraints = false
+        drawboard.leftAnchor.constraint(equalTo: leftAnchor).isActive = true
+        drawboard.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
+        drawboard.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        drawboard.topAnchor.constraint(equalTo: topAnchor).isActive = true
+        drawboard.delegate = self
+        translatesAutoresizingMaskIntoConstraints = false
+        let size = intrinsicContentSize
+        widthAnchor.constraint(equalToConstant: size.width).isActive = true
+        heightAnchor.constraint(equalToConstant: size.height).isActive = true
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override var intrinsicContentSize: CGSize {
-        let size = super.intrinsicContentSize
+        let size = mosaicView.intrinsicContentSize
         let width = min(size.width, UIScreen.main.bounds.width - 20)
         let scale = size.width / width
         let height = size.height / scale
         return CGSize(width: width, height: height)
     }
+    
+    override func sizeThatFits(_ size: CGSize) -> CGSize {
+        return intrinsicContentSize
+    }
+    
+    func undo(for type: XHImageEditboardBrushType) {
+        switch type {
+        case .line:
+            drawboard.undo()
+        case .mosaic:
+            mosaicView.undo()
+        }
+    }
+    
+    func canUndo(for type: XHImageEditboardBrushType) -> Bool {
+        switch type {
+        case .line:
+            return drawboard.canUndo
+        case .mosaic:
+            return mosaicView.canUndo
+        }
+    }
+    
+}
+
+extension XHImageEditboard: XHDrawboardDelegate {
+    
+    func drawboardDidBeginDrawing(_ drawboard: XHDrawboard) {
+        delegate?.eidtboard(self, didBeginDrawingWithBrushType: .line)
+    }
+    
+    func drawboardDidEndDrawing(_ drawboard: XHDrawboard) {
+        delegate?.eidtboard(self, didEndDrawingWithBrushType: .line)
+    }
+}
+
+extension XHImageEditboard: XHMosaicViewDelegate {
+    
+    func mosaicViewDidBeginDrawing(_ mosaicView: XHMosaicView) {
+        delegate?.eidtboard(self, didBeginDrawingWithBrushType: .mosaic)
+    }
+    
+    func mosaicViewDidEndDrawing(_ mosaicView: XHMosaicView) {
+        delegate?.eidtboard(self, didEndDrawingWithBrushType: .mosaic)
+    }
+    
+}
+
+fileprivate protocol XHImageEditboardDelegate: NSObjectProtocol {
+    
+    func eidtboard(_ eidtboard: XHImageEditboard,didBeginDrawingWithBrushType type: XHImageEditboardBrushType)
+    
+    func eidtboard(_ eidtboard: XHImageEditboard,didEndDrawingWithBrushType type: XHImageEditboardBrushType)
     
 }
 
@@ -205,6 +324,13 @@ fileprivate class XHImageEditBar: UIView {
     private let toolBar = XHTranslucentToolBar()
     
     private var selectItem: UIButton?
+    
+    var editType: XHImageEditType? {
+        if let selectItem = self.selectItem {
+            return XHImageEditType(rawValue: selectItem.tag)
+        }
+        return nil
+    }
     
     weak var delegate: XHImageEditBarDelegate?
     
@@ -296,6 +422,7 @@ fileprivate class XHImageEditBar: UIView {
     
     private lazy var mosaicBar: XHImageEditMosaicBar = {
         let temp = XHImageEditMosaicBar()
+        temp.uiDelegate = self
         return temp
     }()
     
@@ -342,6 +469,8 @@ fileprivate class XHImageEditBar: UIView {
         switch editType {
         case .pen:
             penBar.canUndo = flag
+        case .mosaic:
+            mosaicBar.canUndo = flag
         default:
             break
         }
@@ -453,7 +582,6 @@ fileprivate class XHImageEditTypeBar<T: XHItemEnum>: XHTranslucentToolBar {
     
     private lazy var revokeButton: UIButton = {
         let temp = UIButton(type: .custom)
-        temp.isEnabled = false
         temp.setImage(#imageLiteral(resourceName: "EditImageRevokeDisable"), for: .disabled)
         temp.setImage(#imageLiteral(resourceName: "EditImageRevokeEnable"), for: .normal)
         temp.sizeToFit()
@@ -498,6 +626,7 @@ fileprivate class XHImageEditTypeBar<T: XHItemEnum>: XHTranslucentToolBar {
     private func configureItems() {
         var allItems = T.allBarButtonItems(target: self, action: #selector(didSelectType(_:)), hasSuffix: true)
         let revokeItem = UIBarButtonItem(customView: revokeButton)
+        revokeButton.isEnabled = false
         allItems.append(revokeItem)
         self.items = allItems
     }

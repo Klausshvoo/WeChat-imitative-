@@ -8,15 +8,36 @@
 
 import UIKit
 
+enum XHMosaicType: Int,CaseIterable {
+    case mosaic,blurry
+}
+
 class XHMosaicView: UIView {
     
     var scale: CGFloat = 1
     
     weak var delegate: XHMosaicViewDelegate?
+    
+    var type: XHMosaicType = .mosaic {
+        didSet {
+            guard type != oldValue else { return }
+            guard let mosaicLayer = _mosaicLayer else { return }
+            switch type {
+            case .mosaic:
+                mosaicLayer.contents = mosaicImage?.cgImage
+            case .blurry:
+                mosaicLayer.contents = blurryImage?.cgImage
+            }
+            mosaicLayer.mask = XHLayer(frame: bounds)
+        }
+    }
 
     private let imageView = UIImageView()
     
+    private var image: UIImage
+    
     init(content: UIImage) {
+        image = content
         super.init(frame: .zero)
         addSubview(imageView)
         currentImage = content
@@ -31,6 +52,13 @@ class XHMosaicView: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    private lazy var mosaicImage: UIImage? = {
+        let scale = image.size.width / bounds.width / UIScreen.main.scale * 20
+        return image.mosaic(for: Int(scale))
+    }()
+    
+    private lazy var blurryImage: UIImage? = image.blurry(for: 0.8)
     
     private var currentImage: UIImage? {
         willSet {
@@ -47,14 +75,19 @@ class XHMosaicView: UIView {
         }
     }
     
+    private var _mosaicLayer: CALayer?
+    
     private lazy var mosaicLayer: CALayer = {
         let temp = CALayer()
         temp.frame = bounds
-        if let image = imageView.image {
-            let scale = image.size.width / bounds.width / UIScreen.main.scale * 20
-            temp.contents = image.mosaic(for: Int(scale))?.cgImage
+        switch type {
+        case .mosaic:
+            temp.contents = mosaicImage?.cgImage
+        case .blurry:
+            temp.contents = blurryImage?.cgImage
         }
         layer.addSublayer(temp)
+        _mosaicLayer = temp
         return temp
     }()
     
@@ -132,7 +165,7 @@ class XHMosaicView: UIView {
             lineJoin = .round
             lineWidth = 20
             fillColor = nil
-            strokeColor = UIColor.red.cgColor
+            strokeColor = UIColor.blue.cgColor
         }
         
         required init?(coder aDecoder: NSCoder) {
@@ -152,12 +185,16 @@ protocol XHMosaicViewDelegate: NSObjectProtocol {
 
 fileprivate extension UIImage {
     
+    /// 获取图片马赛克效果
+    ///
+    /// - Parameter level: 与像素相关，必须大于0
+    /// - Returns: a new UIImage object
     func mosaic(for level: Int) -> UIImage? {
         guard let cgImage = self.cgImage else { return nil }
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let width = cgImage.width
         let height = cgImage.height
-        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace, bitmapInfo: cgImage.bitmapInfo.rawValue) else { return nil }
         context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
         guard let bitmapData = context.data else { return nil }
         let pixel = UnsafeMutableRawPointer.allocate(byteCount: 4, alignment: 1)
@@ -181,10 +218,41 @@ fileprivate extension UIImage {
         let newdata = UnsafePointer<UInt8>(OpaquePointer(bitmapData))
         guard let data = CFDataCreate(kCFAllocatorDefault, newdata, length) else { return nil }
         let provider = CGDataProvider(data: data)
-        guard let result = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: 4 * width, space: colorSpace, bitmapInfo: CGBitmapInfo(rawValue: 1), provider: provider!, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else { return nil}
+        guard let result = CGImage(width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: 4 * width, space: colorSpace, bitmapInfo: cgImage.bitmapInfo, provider: provider!, decode: nil, shouldInterpolate: false, intent: .defaultIntent) else { return nil}
         let outputContext = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 4 * width, space: colorSpace, bitmapInfo: 1)
         outputContext?.draw(result, in: CGRect(origin: .zero, size: CGSize(width: width, height: height)))
         return UIImage(cgImage: result, scale: UIScreen.main.scale, orientation: .up)
     }
     
 }
+
+import Accelerate
+
+extension UIImage {
+    
+    /// 获取图片高斯模糊效果
+    ///
+    /// - Parameter level: 模糊等级，bounds 0 ... 1
+    /// - Returns: a new UIImage object
+    func blurry(for level: CGFloat) -> UIImage? {
+        guard level > 0 && level < 1 else { return nil }
+        guard let cgImage = self.cgImage else { return nil }
+        var boxSize = UInt32(level * 100)
+        boxSize = boxSize - boxSize % 2 + 1
+        guard let provider = cgImage.dataProvider else { return nil }
+        guard let bitmapData = provider.data else { return nil }
+        let data = UnsafeMutablePointer(mutating: CFDataGetBytePtr(bitmapData))
+        var inBuffer = vImage_Buffer(data: data, height: vImagePixelCount(cgImage.height), width: vImagePixelCount(cgImage.width), rowBytes: cgImage.bytesPerRow)
+        guard let pixelBuffer = malloc(cgImage.bytesPerRow * cgImage.height) else { return nil }
+        var outBuffer = vImage_Buffer(data: pixelBuffer, height: vImagePixelCount(cgImage.height), width: vImagePixelCount(cgImage.width), rowBytes: cgImage.bytesPerRow)
+        let error = vImageBoxConvolve_ARGB8888(&inBuffer, &outBuffer, nil, 0, 0, boxSize, boxSize, nil, vImage_Flags(kvImageEdgeExtend))
+        guard error == kvImageNoError else { return nil }
+        guard let colorSpace = cgImage.colorSpace else { return nil }
+        guard let context = CGContext(data: outBuffer.data, width: cgImage.width, height: cgImage.height, bitsPerComponent: 8, bytesPerRow: outBuffer.rowBytes, space: colorSpace, bitmapInfo: cgImage.bitmapInfo.rawValue) else { return nil }
+        guard let cgResult = context.makeImage() else { return nil }
+        pixelBuffer.deallocate()
+        return UIImage(cgImage: cgResult)
+    }
+    
+}
+//kCGColorSpaceICCBased; kCGColorSpaceModelRGB; sRGB IEC61966-2.1

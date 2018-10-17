@@ -136,7 +136,11 @@ extension XHImageEditController: XHImageEditBarDelegate {
                 drawboard.lineColor = color
             }
         case .mosaic:
-            drawboard.brushType = .mosaic
+            if let type = info as? XHMosaicType {
+                drawboard.brushType = .mosaic(type)
+            } else {
+                drawboard.brushType = .mosaic(.mosaic)
+            }
             drawboard.isUserInteractionEnabled = true
             zoomableView.isScrollEnabled = false
         default:
@@ -156,12 +160,9 @@ extension XHImageEditController: XHImageEditBarDelegate {
     fileprivate func editBar(_ editBar: XHImageEditBar, shouldUndoFor editType: XHImageEditType) {
         var canUndo: Bool
         switch editType {
-        case .pen:
-            drawboard.undo(for: .line)
-            canUndo = drawboard.canUndo(for: .line)
-        case .mosaic:
-            drawboard.undo(for: .mosaic)
-            canUndo = drawboard.canUndo(for: .mosaic)
+        case .pen,.mosaic:
+            drawboard.undo(for: drawboard.brushType)
+            canUndo = drawboard.canUndo(for: drawboard.brushType)
         default:
             canUndo = false
             break
@@ -169,8 +170,8 @@ extension XHImageEditController: XHImageEditBarDelegate {
         editBar.setCanUndo(canUndo, for: editType)
     }
     
-    fileprivate func editBar(_ editBar: XHImageEditBar, shouldDrawMosaicWith type: XHImageEditMosaicType) {
-        
+    fileprivate func editBar(_ editBar: XHImageEditBar, shouldDrawMosaicWith type: XHMosaicType) {
+        drawboard.brushType = .mosaic(type)
     }
     
 }
@@ -196,7 +197,7 @@ fileprivate enum XHImageEditType: Int {
 }
 
 enum XHImageEditboardBrushType {
-    case line,mosaic
+    case line,mosaic(XHMosaicType)
 }
 
 fileprivate class XHImageEditboard: UIView {
@@ -205,7 +206,13 @@ fileprivate class XHImageEditboard: UIView {
     
     var brushType: XHImageEditboardBrushType = .line {
         didSet {
-            drawboard.isUserInteractionEnabled = brushType == .line
+            switch brushType {
+            case .line:
+                drawboard.isUserInteractionEnabled = true
+            case .mosaic(let type):
+                drawboard.isUserInteractionEnabled = false
+                mosaicView.type = type
+            }
         }
     }
     
@@ -302,11 +309,11 @@ extension XHImageEditboard: XHDrawboardDelegate {
 extension XHImageEditboard: XHMosaicViewDelegate {
     
     func mosaicViewDidBeginDrawing(_ mosaicView: XHMosaicView) {
-        delegate?.eidtboard(self, didBeginDrawingWithBrushType: .mosaic)
+        delegate?.eidtboard(self, didBeginDrawingWithBrushType: .mosaic(mosaicView.type))
     }
     
     func mosaicViewDidEndDrawing(_ mosaicView: XHMosaicView) {
-        delegate?.eidtboard(self, didEndDrawingWithBrushType: .mosaic)
+        delegate?.eidtboard(self, didEndDrawingWithBrushType: .mosaic(mosaicView.type))
     }
     
 }
@@ -492,7 +499,7 @@ extension XHImageEditBar: XHImageEditPenBarDelegate {
 
 extension XHImageEditBar: XHImageEditMosaicBarDelegate {
     
-    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar, didSelect type: XHImageEditMosaicType) {
+    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar, didSelect type: XHMosaicType) {
         delegate?.editBar(self, shouldDrawMosaicWith: type)
     }
     
@@ -512,7 +519,7 @@ fileprivate protocol XHImageEditBarDelegate: NSObjectProtocol {
     
     func editBar(_ editBar: XHImageEditBar,shouldUndoFor editType: XHImageEditType)
     
-    func editBar(_ editBar: XHImageEditBar,shouldDrawMosaicWith type: XHImageEditMosaicType)
+    func editBar(_ editBar: XHImageEditBar,shouldDrawMosaicWith type: XHMosaicType)
     
 }
 
@@ -710,14 +717,13 @@ fileprivate protocol XHImageEditPenBarDelegate: NSObjectProtocol {
     
 }
 
-fileprivate enum XHImageEditMosaicType: Int,XHItemEnum {
-    case traditional,brush
+extension XHMosaicType: XHItemEnum {
     
     var iconName: String {
         switch self {
-        case .traditional:
+        case .mosaic:
             return "EditImageTraditionalMosaicBtn"
-        case .brush:
+        case .blurry:
             return "EditImageBrushMosaicBtn"
         }
     }
@@ -732,11 +738,11 @@ fileprivate enum XHImageEditMosaicType: Int,XHItemEnum {
     
 }
 
-fileprivate class XHImageEditMosaicBar: XHImageEditTypeBar<XHImageEditMosaicType> {
+fileprivate class XHImageEditMosaicBar: XHImageEditTypeBar<XHMosaicType> {
     
     weak var uiDelegate: XHImageEditMosaicBarDelegate?
     
-    var type: XHImageEditMosaicType = .traditional
+    var type: XHMosaicType = .mosaic
     
     override var revokeButtonWidth: CGFloat? {
         return UIScreen.main.bounds.width * 0.2
@@ -745,7 +751,7 @@ fileprivate class XHImageEditMosaicBar: XHImageEditTypeBar<XHImageEditMosaicType
     override func didSelectType(_ sender: UIButton) {
         super.didSelectType(sender)
         guard sender.isSelected else { return }
-        uiDelegate?.mosaicBar(self, didSelect: XHImageEditMosaicType(rawValue: sender.tag)!)
+        uiDelegate?.mosaicBar(self, didSelect: XHMosaicType(rawValue: sender.tag)!)
     }
     
     override func shouldRevokeLastDraw(_ sender: UIButton) {
@@ -756,7 +762,7 @@ fileprivate class XHImageEditMosaicBar: XHImageEditTypeBar<XHImageEditMosaicType
 
 fileprivate protocol XHImageEditMosaicBarDelegate: NSObjectProtocol {
     
-    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar,didSelect type: XHImageEditMosaicType)
+    func mosaicBar(_ mosaicBar: XHImageEditMosaicBar,didSelect type: XHMosaicType)
     
     func mosaicBarShouldUndo(_ mosaicBar: XHImageEditMosaicBar)
     
